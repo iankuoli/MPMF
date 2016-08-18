@@ -77,30 +77,30 @@ if TEST_TYPE == 1:
     # CoordinateAscent_MPF_1(K, 10 * ones(1, 6), 1, 10, 0, 0.1, 3, 1, 0.01)
     # CoordinateAscent_MPF_2(K, 10 * ones(1, 6), 1, 5, 0, 0.01, 3, 1, 0.01, 20)
     # CoordinateAscent_MRwPF_1(K, 10 * ones(1, 6), 1, 100, 100, 0.01, 3, 1, 0.01)
-    MPMF = ManifoldPMF.ManifoldPMF(k, matX, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 0.1,
+    MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 0.1, ([1] * 10))),
                                    delta=100, epsilon=1, mu=0.3, r_u=3, r_i=1, ini_scale=0.01)
     MPMF.coordinate_ascent(alpha=0.3, max_itr=10000)
 elif TEST_TYPE == 2:
     """ The best settings for JAIN = > 1.0 """
     # CoordinateAscent_MPF3(2, 1.0 * ones(1, 6), 0, 1, 0, 0.001, 5, 1)
     # CoordinateAscent_MPF_1(2, 1 * ones(1, 6), 0, 1, 0, 0.001, 5, 1, 0.1)
-    MPMF = ManifoldPMF.ManifoldPMF(k, matX, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 1,
+    MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 1, ([1] * 10))),
                                    delta=1, epsilon=0, mu=0, r_u=5, r_i=1, ini_scale=0.1)
     MPMF.coordinate_ascent(alpha=0.001, max_itr=10000)
 elif TEST_TYPE == 3:
     """ The best settings for IRIS = > 0.966667 """
     # CoordinateAscent_MPF3(3, 0.08 * ones(1, 4), 0, 1, 0, 0.1, 10, 1)
-    MPMF = ManifoldPMF.ManifoldPMF(k, matX, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 1,
+    MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 1, ([1] * 10))),
                                    delta=1, epsilon=0, mu=0, r_u=10, r_i=1, ini_scale=0.1)
     MPMF.coordinate_ascent(alpha=0.1, max_itr=10000)
 elif TEST_TYPE == 4:
     """ The best settings for YEAST = > 0.384097 -> 20 / 0.1 """
     # CoordinateAscent_MPF3(K, 1 * ones(1, 4), 0, 1, 0, 0.1, 20, 1)
-    MPMF = ManifoldPMF.ManifoldPMF(k, matX, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 1,
+    MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 1, ([1] * 10))),
                                    delta=1, epsilon=0, mu=0, r_u=20, r_i=1, ini_scale=0.1)
     MPMF.coordinate_ascent(alpha=0.1, max_itr=10000)
 elif TEST_TYPE == 5:
-    MPMF = ManifoldPMF.ManifoldPMF(k, matX, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 1,
+    MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 1, ([1] * 10))),
                                    delta=1, epsilon=0, mu=0, r_u=20, r_i=1, ini_scale=0.1)
     MPMF.coordinate_ascent(alpha=0.1, max_itr=10000)
 

@@ -1,0 +1,118 @@
+import LoadFile
+import ManifoldPMF
+import Measure
+
+"""
+ Test Manifold Poisson Matrix Factorization.
+"""
+
+""" vvv---------- Start: Global settings ----------vvv """
+
+""" Re-read = > 0: not re - read 1: re-read"""
+REREAD = 1
+
+""" Test Type = > 1: toy graph 2: JAIN 3: IRIS 4: YEAST 5: Last.fm """
+TEST_TYPE = 1
+
+""" Enviornment = > 1: OSX 2: Windows """
+ENV = 1
+
+""" ^^^---------- Finish: Global settings ----------^^^ """
+
+""" number of topics """
+k = 8
+
+""" vvv---------- Start: Load Data ----------vvv """
+if REREAD == 1:
+    if TEST_TYPE == 1:
+        if ENV == 1:
+            matX = LoadFile.load_small_toy("/Users/iankuoli/Dataset/small_toy/toy_graph.csv")
+        elif ENV == 2:
+            matX = LoadFile.load_small_toy("C:/Dataset/small_toy/toy_graph.csv")\
+
+    elif TEST_TYPE == 2:
+        # Read JAIN
+        if ENV == 1:
+            matX, vecLabel = LoadFile.load_small_toy("/Users/iankuoli/Dataset/jain.csv")
+        elif ENV == 2:
+            matX, vecLabel = LoadFile.load_small_toy("/Users/iankuoli/Dataset/jain.csv")
+
+    elif TEST_TYPE == 3:
+        # Read IRIS
+        if ENV == 1:
+            matX, vecLabel = LoadFile.load_iris('/Users/iankuoli/Dataset/IRIS/iris.data')
+        elif ENV == 2:
+            matX, vecLabel = LoadFile.load_iris('/Users/iankuoli/Dataset/IRIS/iris.data')
+
+    elif TEST_TYPE == 4:
+        # Read YEAST
+        if ENV == 1:
+            matX, vecLabel = LoadFile.load_yeast('/Users/iankuoli/Dataset/YEAST/yeast.data')
+        elif ENV == 2:
+            matX, vecLabel = LoadFile.load_yeast('/Users/iankuoli/Dataset/YEAST/yeast.data')
+
+    elif TEST_TYPE == 5:
+         # Read Last.fm data(User - Item - Word)
+         if ENV == 1:
+            item_file_path = '/Users/iankuoli/Dataset/LastFm2/artists2.txt'
+            word_file_path = '/Users/iankuoli/Dataset/LastFm2/tags.dat'
+            UI_file_path = '/Users/iankuoli/Dataset/LastFm2/user_artists.dat'
+            UIW_file_path = '/Users/iankuoli/Dataset/LastFm2/user_taggedartists.dat'
+         elif ENV == 2:
+            item_file_path = 'C:/Dataset/LastFm2/artists2.txt'
+            word_file_path = 'C:/Dataset/LastFm2/tags.dat'
+            UI_file_path = 'C:/Dataset/LastFm2/user_artists.dat'
+            UIW_file_path = 'C:/Dataset/LastFm2/user_taggedartists.dat'
+
+         #[U, D, W] = LoadLastFmData(item_filepath, word_filepath, UI_filepath, UIW_filepath)
+
+    M, N = matX.shape
+
+""" ^^^---------- Finish: Load Data ----------^^^ """
+
+
+""" vvv---------- Start: Training Phase ----------vvv """
+
+if TEST_TYPE == 1:
+    # CoordinateAscent_MPF_1(K, 10 * ones(1, 6), 1, 10, 0, 0.1, 3, 1, 0.01)
+    # CoordinateAscent_MPF_2(K, 10 * ones(1, 6), 1, 5, 0, 0.01, 3, 1, 0.01, 20)
+    # CoordinateAscent_MRwPF_1(K, 10 * ones(1, 6), 1, 100, 100, 0.01, 3, 1, 0.01)
+    MPMF = ManifoldPMF.ManifoldPMF(k, matX, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 0.1,
+                                   delta=100, epsilon=1, mu=0.3, r_u=3, r_i=1, ini_scale=0.01)
+    MPMF.coordinate_ascent(alpha=0.3, max_itr=10000)
+elif TEST_TYPE == 2:
+    """ The best settings for JAIN = > 1.0 """
+    # CoordinateAscent_MPF3(2, 1.0 * ones(1, 6), 0, 1, 0, 0.001, 5, 1)
+    # CoordinateAscent_MPF_1(2, 1 * ones(1, 6), 0, 1, 0, 0.001, 5, 1, 0.1)
+    MPMF = ManifoldPMF.ManifoldPMF(k, matX, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 1,
+                                   delta=1, epsilon=0, mu=0, r_u=5, r_i=1, ini_scale=0.1)
+    MPMF.coordinate_ascent(alpha=0.001, max_itr=10000)
+elif TEST_TYPE == 3:
+    """ The best settings for IRIS = > 0.966667 """
+    # CoordinateAscent_MPF3(3, 0.08 * ones(1, 4), 0, 1, 0, 0.1, 10, 1)
+    MPMF = ManifoldPMF.ManifoldPMF(k, matX, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 1,
+                                   delta=1, epsilon=0, mu=0, r_u=10, r_i=1, ini_scale=0.1)
+    MPMF.coordinate_ascent(alpha=0.1, max_itr=10000)
+elif TEST_TYPE == 4:
+    """ The best settings for YEAST = > 0.384097 -> 20 / 0.1 """
+    # CoordinateAscent_MPF3(K, 1 * ones(1, 4), 0, 1, 0, 0.1, 20, 1)
+    MPMF = ManifoldPMF.ManifoldPMF(k, matX, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 1,
+                                   delta=1, epsilon=0, mu=0, r_u=20, r_i=1, ini_scale=0.1)
+    MPMF.coordinate_ascent(alpha=0.1, max_itr=10000)
+elif TEST_TYPE == 5:
+    MPMF = ManifoldPMF.ManifoldPMF(k, matX, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 1,
+                                   delta=1, epsilon=0, mu=0, r_u=20, r_i=1, ini_scale=0.1)
+    MPMF.coordinate_ascent(alpha=0.1, max_itr=10000)
+
+[g, h] = max(MPMF.matTheta, [], 2)
+Accuracy_MPF = Measure.accuracy(vecLabel, h, k)
+
+# fprintf('\nRun NMFR ...')
+"""
+ W = nmfr(matX / D, K, 0.5)       The best settings for IRIS = > 0.973333
+ W = nmfr(matX / D, K, 0.9)       The best settings for YEAST = > 0.463612 -> 5 / 0.99
+ [g, h] = max(W, [], 2)
+ Accuracy_NMFR = MeasureAccuracy(vecLabel, h, K)
+"""
+Accuracy_NMFR = 0
+print('\nAccuracy is ', Accuracy_MPF, ' / ',  Accuracy_NMFR, '\n')

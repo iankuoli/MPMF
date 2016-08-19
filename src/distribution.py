@@ -28,7 +28,8 @@ def log_Poisson(X, Theta, Beta):
     
     vecT = np.zeros((x_X.shape[0]))
     for i in range(v_X.shape[0]):
-        vecT[i] = Theta[x_X[i], :] * Beta[:, y_X[i]]
+
+        vecT[i] = Theta[x_X[i], :].dot(Beta[:, y_X[i]])
 
     l += np.dot(v_X, log(vecT))
 

@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.sparse import *
 from scipy.special import *
 
 
@@ -8,7 +9,7 @@ def similarity(matX, matY, type, r=1):
         matRet = np.dot(matX * matX.T) + np.dot(matY * matY.T) + -2 * np.dot(matX * matY.T)
         h = np.std(np.reshape(matRet, matRet.shape[0] * matRet.shape[1], 1)) / 20
         matRet = np.exp(- matRet / h)
-        return matRet
+        return csr_matrix(matRet)
 
     elif type == 'cos':
 
@@ -16,7 +17,7 @@ def similarity(matX, matY, type, r=1):
         matD_X = np.sqrt(np.diag(np.dot(matX, matX.T)))
         matD_Y = np.sqrt(np.diag(np.dot(matY, matY.T)))
         matRet = ((matRet / matD_Y).T / matD_X).T
-        return matRet
+        return csr_matrix(matRet)
 
     elif type == 'gamma':
 
@@ -32,4 +33,4 @@ def similarity(matX, matY, type, r=1):
             matRet[i, :] = sum(ret.T)
 
         matRet = np.exp(matRet / matX.shape[1])
-        return matRet
+        return csr_matrix(matRet)

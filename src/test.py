@@ -77,7 +77,7 @@ if TEST_TYPE == 1:
     # CoordinateAscent_MPF_1(K, 10 * ones(1, 6), 1, 10, 0, 0.1, 3, 1, 0.01)
     # CoordinateAscent_MPF_2(K, 10 * ones(1, 6), 1, 5, 0, 0.01, 3, 1, 0.01, 20)
     # CoordinateAscent_MRwPF_1(K, 10 * ones(1, 6), 1, 100, 100, 0.01, 3, 1, 0.01)
-    MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 0.1, ([1] * 10))),
+    MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 10, ([1] * 10))),
                                    delta=100, epsilon=1, mu=0.3, r_u=3, r_i=1, ini_scale=0.01)
     MPMF.coordinate_ascent(alpha=0.3, max_itr=10000)
 elif TEST_TYPE == 2:

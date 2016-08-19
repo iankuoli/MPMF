@@ -24,7 +24,10 @@ def log_Poisson(X, Theta, Beta):
     l = 0
     
     [x_X, y_X, v_X] = find(X)
-    l = l - sum(Theta) * sum(Beta.T)
+
+    a = np.sum(Theta, 0)
+    b = np.sum(Beta, 1)
+    l = l - np.dot(a, b)
     
     vecT = np.zeros((x_X.shape[0]))
     for i in range(v_X.shape[0]):

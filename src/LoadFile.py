@@ -16,8 +16,8 @@ def load_small_toy(file_path):
     with open(file_path, 'r', encoding='UTF-8') as data:
         for line in data:
             l = line.strip('\n').split(',')
-            user = int(l[0])
-            item = int(l[1])
+            user = int(l[0]) - 1
+            item = int(l[1]) - 1
             freq = float(l[2])
             list_users.append(user)
             list_items.append(item)

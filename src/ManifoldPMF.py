@@ -318,7 +318,7 @@ class ManifoldPMF:
 
                 new_l = new_1 + new_2 + new_3
 
-                if abs(new_l - l) < 0.01:
+                if abs(new_l - l) < 0.1:
                     is_converge = True
 
                 l = new_l

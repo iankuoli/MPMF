@@ -1,3 +1,4 @@
+import numpy as np
 from scipy import *
 from scipy.sparse import *
 
@@ -114,3 +115,69 @@ def load_last_fm(ui_path, user_profile_path, item_profile_path):
 
     mat_x = csr_matrix((list_freq, (list_users, list_items)))
     return mat_x, list_user_name2id, list_user_id2name, list_item_name2id, list_item_id2name
+
+
+def load_imdb(ui_path):
+    matX = csr.csr_matrix((1, 1))
+    return matX
+
+def load_UCI_MSD(ui_path):
+    with open(ui_path, 'r', encoding='UTF-8') as ui_data:
+        for line in ui_data:
+            print(line)
+
+
+def load_EchoNestTaste(ui_path):
+
+    dict_user2id = dict()
+    dict_item2id = dict()
+
+    row_index = []
+    col_index = []
+    val_index = []
+
+    with open(ui_path, 'r', encoding='UTF-8') as ui_data:
+
+        for line in ui_data:
+            l = line.strip('\n').split('\t')
+            user_key = l[0]
+            item_key = l[1]
+            count = int(l[2])
+
+            if user_key in dict_user2id.keys():
+                uid = dict_user2id[user_key]
+            else:
+                uid = len(dict_user2id)
+                dict_user2id[user_key] = uid
+
+            if item_key in dict_item2id.keys():
+                iid = dict_item2id[item_key]
+            else:
+                iid = len(dict_item2id)
+                dict_item2id[item_key] = iid
+
+            row_index.append(uid)
+            col_index.append(iid)
+            val_index.append(count)
+
+    nnz = len(val_index)
+    mask = np.random.randint(100, size=nnz)
+
+    # rand_num < 21: for testing
+    # rand_num == 21: for validation / tune parameters
+    # rand_num > 21: for training
+
+    idx_test = mask < 21
+    idx_valid = mask == 21
+    idx_train = mask > 21
+
+    matX_train = csr_matrix((np.compress(idx_train, val_index, axis=0),
+                            (np.compress(idx_train, row_index, axis=0), np.compress(idx_train, col_index, axis=0))))
+
+    matX_test = csr_matrix((np.compress(idx_test, val_index, axis=0),
+                             (np.compress(idx_test, row_index, axis=0), np.compress(idx_test, col_index, axis=0))))
+
+    matX_valid = csr_matrix((np.compress(idx_valid, val_index, axis=0),
+                            (np.compress(idx_valid, row_index, axis=0), np.compress(idx_valid, col_index, axis=0))))
+
+    return matX_train, matX_test, matX_valid

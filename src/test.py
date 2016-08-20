@@ -12,7 +12,7 @@ import Measure
 REREAD = 1
 
 """ Test Type = > 1: toy graph 2: JAIN 3: IRIS 4: YEAST 5: Last.fm """
-TEST_TYPE = 1
+TEST_TYPE = 7
 
 """ Enviornment = > 1: OSX 2: Windows """
 ENV = 1
@@ -28,7 +28,7 @@ if REREAD == 1:
         if ENV == 1:
             matX = LoadFile.load_small_toy("/Users/iankuoli/Dataset/small_toy/toy_graph.csv")
         elif ENV == 2:
-            matX = LoadFile.load_small_toy("C:/Dataset/small_toy/toy_graph.csv")\
+            matX = LoadFile.load_small_toy("/home/dataset/small_toy/toy_graph.csv")\
 
     elif TEST_TYPE == 2:
         # Read JAIN
@@ -52,17 +52,33 @@ if REREAD == 1:
             matX, vecLabel = LoadFile.load_yeast('/Users/iankuoli/Dataset/YEAST/yeast.data')
 
     elif TEST_TYPE == 5:
-         # Read Last.fm data(User - Item - Word)
-         if ENV == 1:
+        # Read Last.fm data(User - Item - Word)
+        if ENV == 1:
             item_file_path = '/Users/iankuoli/Dataset/LastFm2/artists2.txt'
             word_file_path = '/Users/iankuoli/Dataset/LastFm2/tags.dat'
             UI_file_path = '/Users/iankuoli/Dataset/LastFm2/user_artists.dat'
             UIW_file_path = '/Users/iankuoli/Dataset/LastFm2/user_taggedartists.dat'
-         elif ENV == 2:
-            item_file_path = 'C:/Dataset/LastFm2/artists2.txt'
-            word_file_path = 'C:/Dataset/LastFm2/tags.dat'
-            UI_file_path = 'C:/Dataset/LastFm2/user_artists.dat'
-            UIW_file_path = 'C:/Dataset/LastFm2/user_taggedartists.dat'
+        elif ENV == 2:
+            item_file_path = '/home/dataset/LastFm2/artists2.txt'
+            word_file_path = '/home/dataset/LastFm2/tags.dat'
+            UI_file_path = '/home/dataset/LastFm2/user_artists.dat'
+            UIW_file_path = '/home/dataset/LastFm2/user_taggedartists.dat'
+    elif TEST_TYPE == 6:
+        # UCL Million Song Dataset
+        # This dataset does not provide the user-item relationship
+        if ENV == 1:
+            matX = LoadFile.load_UCI_MSD('/Users/iankuoli/Dataset/UCI_MillionSongDataset/YearPredictionMSD.txt')
+        elif ENV == 2:
+            matX = LoadFile.load__UCI_MSD('/home/dataset/UCI_MillionSongDataset/YearPredictionMSD.txt')
+    elif TEST_TYPE == 7:
+        # The Echo Nest Taste Profile Subset
+        # 1,019,318 unique users
+        # 384,546 unique MSD songs
+        # 48,373,586 user - song - play count triplets
+        if ENV == 1:
+            matX = LoadFile.load_EchoNestTaste('/Users/iankuoli/Dataset/EchoNestTaste/train_triplets.txt')
+        elif ENV == 2:
+            matX = LoadFile.load_EchoNestTaste('/home/dataset/EchoNestTaste/train_triplets.txt')
 
          #[U, D, W] = LoadLastFmData(item_filepath, word_filepath, UI_filepath, UIW_filepath)
 

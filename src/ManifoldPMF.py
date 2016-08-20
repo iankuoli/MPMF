@@ -4,6 +4,10 @@ from scipy.sparse import *
 from scipy.special import *
 import matplotlib.pyplot as plt
 
+from datetime import timedelta
+from datetime import datetime
+import time
+
 import similarity as sim
 import distribution as dist
 
@@ -156,12 +160,12 @@ class ManifoldPMF:
             if self.epsilon > 0:
                 print('Update tensorPhi ...  k = ')
                 matPhi_sum = csr_matrix((self.M, self.N))
-                matX_One = self.matX > 0
+                #matX_One = self.matX > 0
                 for k in range(self.K):
                     print(k, ", ", end="")
 
-                    self.tensorPhi[k] = diags(matTheta_Shp_psi[:, k] - matTheta_Rte_log[:, k]).dot(matX_One)
-                    self.tensorPhi[k] += matX_One.dot(diags(matBeta_Shp_psi[:, k] - matBeta_Rte_log[:, k]))
+                    self.tensorPhi[k] = diags(matTheta_Shp_psi[:, k] - matTheta_Rte_log[:, k]) * (self.matX > 0)
+                    self.tensorPhi[k] += (self.matX > 0).dot(diags(matBeta_Shp_psi[:, k] - matBeta_Rte_log[:, k]))
 
                     [ii, jj, ss] = find(self.tensorPhi[k])
                     self.tensorPhi[k] = csr_matrix((exp(ss), (ii, jj)), shape=(self.M, self.N))
@@ -178,16 +182,13 @@ class ManifoldPMF:
             if self.delta > 0:
                 print("\nUpdate tensorRho ...  k = ")
                 matRho_sum = csr_matrix((self.M, self.M))
-                matW_One = self.matW > 0
+                #matW_One = self.matW > 0
                 for k in range(self.K):
                     print(k, ", ", end="")
 
-                    b = matTheta_Shp_psi[:, k]
-                    c = matTheta_Rte_log[:, k]
-                    a = b - c + matPi_Shp_psi - matPi_Rte_log
                     self.tensorRho[k] = diags(matTheta_Shp_psi[:, k] - matTheta_Rte_log[:, k] +
-                                              matPi_Shp_psi - matPi_Rte_log) * matW_One
-                    self.tensorRho[k] += matW_One * diags(matTheta_Shp_psi[:, k] - matTheta_Rte_log[:, k]
+                                              matPi_Shp_psi - matPi_Rte_log) * (self.matW > 0)
+                    self.tensorRho[k] += (self.matW > 0) * diags(matTheta_Shp_psi[:, k] - matTheta_Rte_log[:, k]
                                                           + matPi_Shp_psi - matPi_Rte_log)
         
                     [ii, jj, ss] = find(self.tensorRho[k])
@@ -205,18 +206,18 @@ class ManifoldPMF:
             if self.mu > 0:
                 print("\nUpdate tensorSigma ...  k = ")
                 matSigma_sum = csr_matrix((self.N, self.N))
-                matZ_One = self.matS > 0
+                #matZ_One = self.matS > 0
                 for k in range(self.K):
                     print(k, ", ", end="")
                 
                     self.tensorSigma[k] = diags(matBeta_Shp_psi[:, k] - matBeta_Rte_log[:, k] +
-                                                matGamma_Shp_psi - matGamma_Rte_log) * matZ_One
-                    self.tensorSigma[k] += matZ_One * diags(matBeta_Shp_psi[:, k] - matBeta_Rte_log[:, k]
+                                                matGamma_Shp_psi - matGamma_Rte_log) * (self.matS > 0)
+                    self.tensorSigma[k] += (self.matS > 0) * diags(matBeta_Shp_psi[:, k] - matBeta_Rte_log[:, k]
                                                             + matGamma_Shp_psi - matGamma_Rte_log)
                 
                     [ii, jj, ss] = find(self.tensorSigma[k])
                     self.tensorSigma[k] = csr_matrix((exp(ss), (ii, jj)), shape=(self.N, self.N))
-                    matSigma_sum = matSigma_sum + self.tensorSigma[k]
+                    matSigma_sum += self.tensorSigma[k]
 
                 for k in range(self.K):
                     [x_Phi, y_Phi, v_Phi] = find(self.tensorSigma[k])
@@ -232,8 +233,7 @@ class ManifoldPMF:
             """
             if self.delta > 0:
                 self.matPi_Shp = np.squeeze(np.asarray(self.p + self.matW.sum(1)))
-                tmp = sum(self.matTheta * self.matPi[:, None], 0)
-                self.matPi_Rte = self.q + np.dot(self.matTheta, tmp.T)
+                self.matPi_Rte = self.q + np.dot(self.matTheta, sum(self.matTheta * self.matPi[:, None], 0).T)
                 self.matPi = self.matPi_Shp / self.matPi_Rte
             else:
                 self.matPi = np.zeros(self.M, 1)
@@ -241,17 +241,13 @@ class ManifoldPMF:
             if self.epsilon > 0 or self.delta > 0:
                 for k in range(self.K):
 
-                    z1 = np.squeeze(np.asarray(self.matX.multiply(self.tensorPhi[k]).sum(1)))
-                    z2 = np.squeeze(np.asarray(self.matW.multiply(self.tensorRho[k]).sum(1)))
-
-                    self.matTheta_Shp[:, k] = self.epsilon * z1 + self.delta * z2
+                    self.matTheta_Shp[:, k] = np.squeeze(np.asarray(self.matX.multiply(self.tensorPhi[k]).sum(1)))
+                    self.matTheta_Shp[:, k] += np.squeeze(np.asarray(self.matW.multiply(self.tensorRho[k]).sum(1)))
 
                 self.matTheta_Shp += self.a
 
-                self.matTheta_Rte = np.tile(self.epsilon * np.sum(self.matBeta, 0), (self.M, 1))
-                self.matTheta_Rte += \
-                    np.tile(self.delta * np.sum(self.matTheta * self.matPi[:, None], 0), (self.M, 1)) * \
-                    self.matPi[:, None]
+                self.matTheta_Rte = self.delta * np.sum(self.matTheta * self.matPi[:, None], 0) * self.matPi[:, None]
+                self.matTheta_Rte += self.epsilon * np.sum(self.matBeta, 0)[None, :]
                 self.matTheta_Rte += self.matEpsilon[:, None]
 
                 self.matTheta = self.matTheta_Shp / self.matTheta_Rte
@@ -261,8 +257,7 @@ class ManifoldPMF:
             """
             if self.mu > 0:
                 self.matGamma_Shp = np.squeeze(np.asarray(self.r + self.matS.sum(1)))
-                tmp = sum(self.matBeta * self.matGamma[:, None], 0)
-                self.matGamma_Rte = self.s + np.dot(self.matBeta, tmp.T)
+                self.matGamma_Rte = self.s + np.dot(self.matBeta, sum(self.matBeta * self.matGamma[:, None], 0).T)
                 self.matGamma = self.matGamma_Shp / self.matGamma_Rte
             else:
                 self.matGamma = zeros(self.N, 1)
@@ -270,17 +265,13 @@ class ManifoldPMF:
             if self.epsilon > 0 or self.mu > 0:
                 for k in range(self.K):
 
-                    z1 = np.squeeze(np.asarray(self.matX.multiply(self.tensorPhi[k]).sum(0)))
-                    z2 = np.squeeze(np.asarray(self.matS.multiply(self.tensorSigma[k]).sum(1)))
-
-                    self.matBeta_Shp[:, k] = self.epsilon * z1 + self.mu * z2
+                    self.matBeta_Shp[:, k] = self.epsilon * np.squeeze(np.asarray(self.matX.multiply(self.tensorPhi[k]).sum(0)))
+                    self.matBeta_Shp[:, k] += self.mu * np.squeeze(np.asarray(self.matS.multiply(self.tensorSigma[k]).sum(1)))
 
                 self.matBeta_Shp += self.d
 
-                self.matBeta_Rte = np.tile(self.epsilon * np.sum(self.matTheta, 0), (self.N, 1))
-                self.matBeta_Rte += \
-                    np.tile(self.mu * np.sum(self.matBeta * self.matGamma[:, None], 0), (self.N, 1)) * \
-                    self.matGamma[:, None]
+                self.matBeta_Rte = self.mu * np.sum(self.matBeta * self.matGamma[:, None], 0) * self.matGamma[:, None]
+                self.matBeta_Rte += self.epsilon * np.sum(self.matTheta, 0)[None, :]
                 self.matBeta_Rte += self.matEta[:, None]
 
                 self.matBeta = self.matBeta_Shp / self.matBeta_Rte
@@ -288,7 +279,6 @@ class ManifoldPMF:
             """
              Update matEpsilon_Shp, matEpsilon_Rte
             """
-            print("Update matEpsilon_Shp , matEpsilon_Rte ...")
             self.matEpsilon_Shp = self.b + self.K * self.a
             self.matEpsilon_Rte = self.c + np.sum(self.matTheta, 1)
             self.matEpsilon = self.matEpsilon_Shp / self.matEpsilon_Rte
@@ -296,7 +286,6 @@ class ManifoldPMF:
             """
              Update matEta_Shp, matEta_Rte
             """
-            print("Update matEta_Shp , matEta_Rte ...")
             self.matEta_Shp = self.e + self.K * self.d
             self.matEta_Rte = self.f + np.sum(self.matBeta, 1)
             self.matEta = self.matEta_Shp / self.matEta_Rte
@@ -318,20 +307,22 @@ class ManifoldPMF:
                     new_1 = self.epsilon / self.matX.nnz * dist.log_Poisson(self.matX, self.matTheta, self.matBeta.T)
 
                 if self.delta > 0:
-                    norm_matTheta = self.matTheta * self.matPi[:, None]
-                    new_2 = self.delta / self.matW.nnz * dist.log_Poisson(self.matW, norm_matTheta, norm_matTheta.T)
+                    new_2 = self.delta / self.matW.nnz * dist.log_Poisson(self.matW,
+                                                                          self.matTheta * self.matPi[:, None],
+                                                                          (self.matTheta * self.matPi[:, None]).T)
 
                 if self.mu > 0:
-                    norm_matBeta = self.matBeta * self.matGamma[:, None]
-                    new_3 = self.mu / self.matS.nnz * dist.log_Poisson(self.matS, norm_matBeta, norm_matBeta.T)
+                    new_3 = self.mu / self.matS.nnz * dist.log_Poisson(self.matS,
+                                                                       self.matBeta * self.matGamma[:, None],
+                                                                       (self.matBeta * self.matGamma[:, None]).T)
 
                 new_l = new_1 + new_2 + new_3
 
-                if abs(new_l - l) < 0.0001:
+                if abs(new_l - l) < 0.01:
                     is_converge = True
 
                 l = new_l
-                print("Likelihood: ", l, "  ( ", new_1, ", ", new_2, ", ", new_3, " )")
+                print("\nLikelihood: ", l, "  ( ", new_1, ", ", new_2, ", ", new_3, " )")
 
             if i == 100:
                 plt.matshow(self.matTheta)

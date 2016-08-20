@@ -24,8 +24,9 @@ Test Type = >
  7: The Echo Nest Taste Profile Subset  (http://labrosa.ee.columbia.edu/millionsong/tasteprofile)
  8: MovieLens 20M Dataset  (http://grouplens.org/datasets/movielens/)
  9: Last.fm Dataset - 360K users  (http://www.dtic.upf.edu/~ocelma/MusicRecommendationDataset/index.html)
- 10: R1 - Yahoo! Music User Ratings of Musical Artists, version 1.0 (http://webscope.sandbox.yahoo.com/myrequests.php)
- 11: Book-Crossing Dataset (http://www2.informatik.uni-freiburg.de/~cziegler/BX/)
+ 10: R1 - Yahoo! Music User Ratings of Musical Artists, version 1.0  (http://webscope.sandbox.yahoo.com/myrequests.php)
+ 11: Book-Crossing Dataset  (http://www2.informatik.uni-freiburg.de/~cziegler/BX/)
+ 12: Amazon product data  (http://jmcauley.ucsd.edu/data/amazon/)
  """
 TEST_TYPE = 11
 
@@ -148,6 +149,24 @@ if REREAD == 1:
             matX, matX_test, matX_valid = LoadFile.load_BX('/Users/iankuoli/Dataset/BX-CSV-Dump/BX-Book-Ratings.csv')
         elif ENV == 2:
             matX, matX_test, matX_valid = LoadFile.load_BX('/home/dataset/BX-CSV-Dump/BX-Book-Ratings.csv')
+
+    elif TEST_TYPE == 12:
+
+        # ----- Amazon product data -----
+        # ??? users
+        # ??? books
+        # ??? ratings
+
+        dict_type = {1: "ratings_CDs_and_Vinyl.csv",
+                     2: "ratings_Clothing_Shoes_and_Jewelry.csv",
+                     3: "ratings_Pet_Supplies.csv",
+                     4: "ratings_Baby.csv"
+                     }
+
+        if ENV == 1:
+            matX, matX_test, matX_valid = LoadFile.load_Amazon('/Users/iankuoli/Dataset/amazon/', dict_type[1], '.csv')
+        elif ENV == 2:
+            matX, matX_test, matX_valid = LoadFile.load_Amazon('/home/dataset/amazon/', dict_type[1], '.csv')
 
     M, N = matX.shape
 

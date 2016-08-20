@@ -476,3 +476,76 @@ def load_BX(ui_path):
         pickle.dump(matX_valid, open("BX_valid.p", 'wb'))
 
     return matX_train, matX_test, matX_valid
+
+
+def load_Amazon(ui_path):
+
+    if os.path.isfile("BX_train.p"):
+
+        matX_train = pickle.load(open("BX_train.p", "rb"))
+        matX_test = pickle.load(open("BX_test.p", "rb"))
+        matX_valid = pickle.load(open("BX_valid.p", "rb"))
+
+    else:
+
+        dict_user2id = dict()
+        dict_item2id = dict()
+        dict_id2item = dict()
+
+        row_index = []
+        col_index = []
+        val_index = []
+
+        with open(ui_path, 'r', encoding='UTF-8') as ui_data:
+
+            next(ui_data)
+            for line in ui_data:
+                # user (\t) artist-id (\t) rating
+                l = line.strip('\n').split(';')
+                user_key = int(l[0][1:-1])
+                item_key = l[1][1:-1]
+                rating = int(l[2][1:-1])
+
+                if user_key in dict_user2id.keys():
+                    uid = dict_user2id[user_key]
+                else:
+                    uid = len(dict_user2id)
+                    dict_user2id[user_key] = uid
+
+                if item_key in dict_item2id.keys():
+                    iid = dict_item2id[item_key]
+                else:
+                    iid = len(dict_item2id)
+                    dict_item2id[item_key] = iid
+                    dict_id2item[iid] = item_key
+
+                row_index.append(uid)
+                col_index.append(iid)
+                val_index.append(rating)
+
+        nnz = len(val_index)
+        mask = np.random.randint(100, size=nnz)
+
+        # rand_num < 21: for testing
+        # rand_num == 21: for validation / tune parameters
+        # rand_num > 21: for training
+
+        idx_test = mask < 21
+        idx_valid = mask == 21
+        idx_train = mask > 21
+
+        matX_train = csr_matrix((np.compress(idx_train, val_index, axis=0),
+                                (np.compress(idx_train, row_index, axis=0), np.compress(idx_train, col_index, axis=0))))
+
+        matX_test = csr_matrix((np.compress(idx_test, val_index, axis=0),
+                                 (np.compress(idx_test, row_index, axis=0), np.compress(idx_test, col_index, axis=0))))
+
+        matX_valid = csr_matrix((np.compress(idx_valid, val_index, axis=0),
+                                (np.compress(idx_valid, row_index, axis=0), np.compress(idx_valid, col_index, axis=0))))
+
+        pickle.dump(matX_train, open("BX_train.p", 'wb'))
+        pickle.dump(matX_test, open("BX_test.p", 'wb'))
+        pickle.dump(matX_valid, open("BX_valid.p", 'wb'))
+
+    return matX_train, matX_test, matX_valid
+

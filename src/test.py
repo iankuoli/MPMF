@@ -1,3 +1,5 @@
+import os
+
 import LoadFile
 import ManifoldPMF
 import Measure
@@ -11,8 +13,21 @@ import Measure
 """ Re-read = > 0: not re - read 1: re-read"""
 REREAD = 1
 
-""" Test Type = > 1: toy graph 2: JAIN 3: IRIS 4: YEAST 5: Last.fm """
-TEST_TYPE = 7
+"""
+Test Type = >
+ 1: toy graph
+ 2: JAIN
+ 3: IRIS
+ 4: YEAST
+ 5: Last.fm
+ 6: UCL Million Song Dataset
+ 7: The Echo Nest Taste Profile Subset  (http://labrosa.ee.columbia.edu/millionsong/tasteprofile)
+ 8: MovieLens 20M Dataset  (http://grouplens.org/datasets/movielens/)
+ 9: Last.fm Dataset - 360K users  (http://www.dtic.upf.edu/~ocelma/MusicRecommendationDataset/index.html)
+ 10: R1 - Yahoo! Music User Ratings of Musical Artists, version 1.0 (http://webscope.sandbox.yahoo.com/myrequests.php)
+ 11: Book-Crossing Dataset (http://www2.informatik.uni-freiburg.de/~cziegler/BX/)
+ """
+TEST_TYPE = 11
 
 """ Enviornment = > 1: OSX 2: Windows """
 ENV = 1
@@ -63,6 +78,9 @@ if REREAD == 1:
             word_file_path = '/home/dataset/LastFm2/tags.dat'
             UI_file_path = '/home/dataset/LastFm2/user_artists.dat'
             UIW_file_path = '/home/dataset/LastFm2/user_taggedartists.dat'
+
+        # [U, D, W] = LoadLastFmData(item_filepath, word_filepath, UI_filepath, UIW_filepath)
+
     elif TEST_TYPE == 6:
         # UCL Million Song Dataset
         # This dataset does not provide the user-item relationship
@@ -71,16 +89,65 @@ if REREAD == 1:
         elif ENV == 2:
             matX = LoadFile.load__UCI_MSD('/home/dataset/UCI_MillionSongDataset/YearPredictionMSD.txt')
     elif TEST_TYPE == 7:
-        # The Echo Nest Taste Profile Subset
+
+        # ----- The Echo Nest Taste Profile Subset -----
         # 1,019,318 unique users
         # 384,546 unique MSD songs
         # 48,373,586 user - song - play count triplets
-        if ENV == 1:
-            matX = LoadFile.load_EchoNestTaste('/Users/iankuoli/Dataset/EchoNestTaste/train_triplets.txt')
-        elif ENV == 2:
-            matX = LoadFile.load_EchoNestTaste('/home/dataset/EchoNestTaste/train_triplets.txt')
 
-         #[U, D, W] = LoadLastFmData(item_filepath, word_filepath, UI_filepath, UIW_filepath)
+        if ENV == 1:
+            matX, matX_test, matX_valid = LoadFile.load_EchoNest('/Users/iankuoli/Dataset/EchoNest/train_triplets.txt')
+        elif ENV == 2:
+            matX, matX_test, matX_valid = LoadFile.load_EchoNest('/home/dataset/EchoNest/train_triplets.txt')
+
+    elif TEST_TYPE == 8:
+
+        # ----- MovieLens 20M Dataset -----
+        # 138,000 users
+        # 27, 000movies
+        # 20 million ratings
+        # 465, 000 tag applications
+
+        if ENV == 1:
+            matX, matX_test, matX_valid = LoadFile.load_MovieLens('/Users/iankuoli/Dataset/MovieLens_20M/ratings.csv')
+        elif ENV == 2:
+            matX, matX_test, matX_valid = LoadFile.load_MovieLens('/home/dataset/MovieLens_20M/ratings.csv')
+
+    elif TEST_TYPE == 9:
+
+        # ----- Last.fm Dataset - 360K users -----
+        # 360,000 users
+        # ??? artists
+        # ??? consumings
+
+        if ENV == 1:
+            matX, matX_test, matX_valid, dict_user2id, dict_id2item = LoadFile.load_MovieLens('/Users/iankuoli/Dataset/MovieLens_20M/ratings.csv')
+        elif ENV == 2:
+            matX, matX_test, matX_valid, dict_user2id, dict_id2item = LoadFile.load_MovieLens('/home/dataset/MovieLens_20M/ratings.csv')
+
+    elif TEST_TYPE == 10:
+
+        # ----- R1 - Yahoo! Music User Ratings of Musical Artists, version 1.0 -----
+        # ??? users
+        # ??? artists
+        # ??? consumings
+
+        if ENV == 1:
+            matX, matX_test, matX_valid = LoadFile.load_YahooR1('/Users/iankuoli/Dataset/Yahoo_R1/ydata-ymusic-user-artist-ratings-v1_0.txt')
+        elif ENV == 2:
+            matX, matX_test, matX_valid = LoadFile.load_YahooR1('/home/dataset/Yahoo_R1/ydata-ymusic-user-artist-ratings-v1_0.txt')
+
+    elif TEST_TYPE == 11:
+
+        # ----- Book-Crossing Dataset -----
+        # 278,858 users
+        # 271,379 books
+        # 1,149,780 ratings
+
+        if ENV == 1:
+            matX, matX_test, matX_valid = LoadFile.load_BX('/Users/iankuoli/Dataset/BX-CSV-Dump/BX-Book-Ratings.csv')
+        elif ENV == 2:
+            matX, matX_test, matX_valid = LoadFile.load_BX('/home/dataset/BX-CSV-Dump/BX-Book-Ratings.csv')
 
     M, N = matX.shape
 

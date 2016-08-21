@@ -28,7 +28,7 @@ Test Type = >
  11: Book-Crossing Dataset  (http://www2.informatik.uni-freiburg.de/~cziegler/BX/)
  12: Amazon product data  (http://jmcauley.ucsd.edu/data/amazon/)
  """
-TEST_TYPE = 11
+TEST_TYPE = 1
 
 """ Enviornment = > 1: OSX 2: Windows """
 ENV = 1
@@ -44,7 +44,7 @@ if REREAD == 1:
         if ENV == 1:
             matX = LoadFile.load_small_toy("/Users/iankuoli/Dataset/small_toy/toy_graph.csv")
         elif ENV == 2:
-            matX = LoadFile.load_small_toy("/home/dataset/small_toy/toy_graph.csv")\
+            matX = LoadFile.load_small_toy("/home/dataset/small_toy/toy_graph.csv")
 
     elif TEST_TYPE == 2:
         # Read JAIN

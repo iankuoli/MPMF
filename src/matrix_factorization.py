@@ -5,6 +5,8 @@ Reference paper:
     Neural Information Processing Systems 21 (NIPS 2008). Jan. 2008.
 
 Reference Matlab code: http://www.cs.toronto.edu/~rsalakhu/BPMF.html
+
+author: chyikwei (https://github.com/chyikwei/recommend)
 """
 
 import numpy as np
@@ -83,12 +85,12 @@ class MatrixFactorization(Base):
     def estimate(self, iterations=50, converge=1e-4):
         last_rmse = None
         batch_num = int(np.ceil(float(len(self.train) / self.batch_size)))
-        print "batch_num =", batch_num + 1
+        print ("batch_num =", batch_num + 1)
 
-        for iteration in xrange(iterations):
+        for iteration in range(iterations):
             # np.random.shuffle(self.train)
 
-            for batch in xrange(batch_num):
+            for batch in range(batch_num):
                 data = self.train[
                     batch * self.batch_size: (batch + 1) * self.batch_size]
                 # print "data", data.shape
@@ -110,7 +112,7 @@ class MatrixFactorization(Base):
                 u_feature_grads = np.zeros((self._num_user, self._num_feature))
                 i_feature_grads = np.zeros((self._num_item, self._num_feature))
 
-                for i in xrange(data.shape[0]):
+                for i in range(data.shape[0]):
                     user = data[i, 0]
                     item = data[i, 1]
                     u_feature_grads[user, :] += u_grads[i,:]
@@ -134,8 +136,8 @@ class MatrixFactorization(Base):
                 validation_preds, np.float16(self.validation[:, 2]))
             self.train_errors.append(train_rmse)
             self.validation_erros.append(validation_rmse)
-            print "iterations: %3d, train RMSE: %.6f, validation RMSE: %.6f " % \
-                (iteration + 1, train_rmse, validation_rmse)
+            print ("iterations: %3d, train RMSE: %.6f, validation RMSE: %.6f " % \
+                (iteration + 1, train_rmse, validation_rmse))
 
             # stop if converge
             if last_rmse:
@@ -170,11 +172,11 @@ class MatrixFactorization(Base):
         pass
 
     def load_features(self, path):
-        import cPickle
+        import pickle
         import gzip
         with gzip.open(path, 'rb') as f:
-            self._user_features = cPickle.load(f)
-            self._item_features = cPickle.load(f)
+            self._user_features = pickle.load(f)
+            self._item_features = pickle.load(f)
             num_user, num_feature_u = self._user_features.shape
             num_item, num_feature_i = self._item_features.shape
 
@@ -185,10 +187,10 @@ class MatrixFactorization(Base):
         return self
 
     def save_features(self, path):
-        import cPickle
+        import pickle
         import gzip
         with gzip.open(path, 'wb') as f:
-            cPickle.dump(
-                self._user_features, f, protocol=cPickle.HIGHEST_PROTOCOL)
-            cPickle.dump(
-                self._item_features, f, protocol=cPickle.HIGHEST_PROTOCOL)
+            pickle.dump(
+                self._user_features, f, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(
+                self._item_features, f, protocol=pickle.HIGHEST_PROTOCOL)

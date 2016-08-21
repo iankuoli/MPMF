@@ -3,6 +3,8 @@ Reference paper: "Bayesian Probabilistic Matrix Factorization using MCMC"
                  R. Salakhutdinov and A.Mnih.  
                  25th International Conference on Machine Learning (ICML-2008) 
 Reference Matlab code: http://www.cs.toronto.edu/~rsalakhu/BPMF.html
+
+author: chyikwei (https://github.com/chyikwei/recommend)
 """
 
 import time

@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import *
 from scipy.sparse import *
+import pickle
 import os
 
 
@@ -220,7 +221,7 @@ def load_MovieLens(ui_path):
                 l = line.strip('\n').split(',')
                 user_key = int(l[0])
                 item_key = int(l[1])
-                count = int(l[2]) * 2
+                count = float(l[2]) * 2
 
                 if user_key in dict_user2id.keys():
                     uid = dict_user2id[user_key]
@@ -538,7 +539,7 @@ def load_Amazon(ui_path):
                                 (np.compress(idx_train, row_index, axis=0), np.compress(idx_train, col_index, axis=0))))
 
         matX_test = csr_matrix((np.compress(idx_test, val_index, axis=0),
-                                 (np.compress(idx_test, row_index, axis=0), np.compress(idx_test, col_index, axis=0))))
+                                (np.compress(idx_test, row_index, axis=0), np.compress(idx_test, col_index, axis=0))))
 
         matX_valid = csr_matrix((np.compress(idx_valid, val_index, axis=0),
                                 (np.compress(idx_valid, row_index, axis=0), np.compress(idx_valid, col_index, axis=0))))
@@ -548,4 +549,3 @@ def load_Amazon(ui_path):
         pickle.dump(matX_valid, open("BX_valid.p", 'wb'))
 
     return matX_train, matX_test, matX_valid
-

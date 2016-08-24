@@ -4,7 +4,7 @@ from scipy.sparse import *
 from scipy.special import *
 
 
-def log_Poisson(X, Theta, Beta):
+def log_poisson(X, Theta, Beta):
     """
      Calculate the log likelihood with the Poisson distribution (X ~ A * B)
     """

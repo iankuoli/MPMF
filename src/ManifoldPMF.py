@@ -2,12 +2,13 @@ import numpy as np
 from scipy import *
 from scipy.sparse import *
 from scipy.special import *
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import pickle
 import random
 
 import similarity as sim
 import distribution as dist
+import Measure
 import time
 
 
@@ -17,10 +18,11 @@ class ManifoldPMF:
     The idea is inspired from "Content-based recommendation with Poisson factorization", in NIPS, 2014.
     """
 
-    def __init__(self, val_k, data_x, params, ini_scale, ini):
+    def __init__(self, val_k, data_x, valid_x, params, ini_scale, ini):
 
         self.K = val_k
         self.mat_x = data_x
+        self.mat_valid = valid_x
         self.M = data_x.shape[0]
         self.N = data_x.shape[1]
         self.delta = 0
@@ -142,6 +144,7 @@ class ManifoldPMF:
 
         while is_converge is False and i < max_itr:
             i += 1
+
             print("\n Index: ", i, "  ---------------------------------- \n")
 
             """ vvv---------- Start: Diffusion process of %mat_theta% ----------vvv """
@@ -380,7 +383,7 @@ class ManifoldPMF:
         pickle.dump(self.mat_pi, open("mat_pi.p", 'wb'))
         pickle.dump(self.mat_gamma, open("mat_gamma.p", 'wb'))
 
-    def stochastic_coordinate_ascent(self, batch_size, delta, epsilon, mu, r_u, r_i, max_itr, ini=False):
+    def stochastic_coordinate_ascent(self, batch_size, delta, epsilon, mu, kappa, max_itr, ini=False):
 
         if ini is True:
             self.initialize()
@@ -388,8 +391,6 @@ class ManifoldPMF:
         self.delta = delta
         self.epsilon = epsilon
         self.mu = mu
-        self.r_u = r_u
-        self.r_i = r_i
 
         nnz = self.mat_x.nnz
 
@@ -397,8 +398,13 @@ class ManifoldPMF:
         i = 0
         l = 0
 
+        list_valid_usrs = list(set(find(self.mat_valid)[0]))
+
         while is_converge is False and i < max_itr:
             i += 1
+
+            """ Set the learning rate """
+            lr = (i + 1) ** -kappa
 
             # Sample data
             a1 = time.time()
@@ -408,7 +414,7 @@ class ManifoldPMF:
             a2 = time.time()
             print("sampling time: ", a2 - a1, " sec")
 
-            print("\n Index: ", i, "  ---------------------------------- ", len(usr_idx), " / ", len(itm_idx), "\n")
+            print("\n Index: ", i, "  --------------------------- ", len(usr_idx), " / ", len(itm_idx), " - ", lr, "\n")
 
             """ vvv---------- Start: Build the kernel matrix ----------vvv """
             """ Build mat_w """
@@ -487,33 +493,35 @@ class ManifoldPMF:
             """
             scale = (self.M - 1) / (len(usr_idx) - 1)
             if self.delta > 0:
-                self.mat_pi_shp[usr_idx] = np.squeeze(np.asarray(self.p + scale * self.mat_w[usr_idx, :].sum(1)))
-                self.mat_pi_rte[usr_idx] = \
+                self.mat_pi_shp[usr_idx] = (1 - lr) * self.mat_pi_shp[usr_idx] + lr * (
+                    np.squeeze(np.asarray(self.p + scale * self.mat_w[usr_idx, :].sum(1))))
+
+                self.mat_pi_rte[usr_idx] = (1 - lr) * self.mat_pi_rte[usr_idx] + lr * (
                     self.q + scale * np.dot(self.mat_theta[usr_idx, :],
-                                            np.sum(self.mat_theta[usr_idx, :] * self.mat_pi[usr_idx, None], 0).T)
+                                            np.sum(self.mat_theta[usr_idx, :] * self.mat_pi[usr_idx, None], 0).T))
+
                 self.mat_pi[usr_idx] = self.mat_pi_shp[usr_idx] / self.mat_pi_rte[usr_idx]
 
             if self.epsilon > 0 or self.delta > 0:
                 scale1 = np.squeeze(np.asarray((self.mat_x[usr_idx, :] > 0).sum(1) /
                                                (self.mat_x[np.ix_(usr_idx, itm_idx)] > 0).sum(1)))
                 for kk in range(self.K):
-                    self.mat_theta_shp[usr_idx, kk] = \
+                    self.mat_theta_shp[usr_idx, kk] = (1 - lr) * self.mat_theta_shp[usr_idx, kk] + lr * (
                         self.epsilon * scale1 * np.squeeze(
                             np.asarray(self.mat_x[np.ix_(usr_idx, itm_idx)].multiply(
-                                self.tensor_phi[kk][np.ix_(usr_idx, itm_idx)]).sum(1))) + \
+                                self.tensor_phi[kk][np.ix_(usr_idx, itm_idx)]).sum(1))) +
                         self.delta * scale * np.squeeze(
                             np.asarray(self.mat_w[np.ix_(usr_idx, usr_idx)].multiply(
-                                self.tensor_rho[kk][np.ix_(usr_idx, usr_idx)]).sum(1)))
+                                self.tensor_rho[kk][np.ix_(usr_idx, usr_idx)]).sum(1))))
+                self.mat_theta_shp[usr_idx, :] += lr * self.a
 
-                self.mat_theta_shp[usr_idx, :] += self.a
-
-                self.mat_theta_rte[usr_idx, :] = \
+                self.mat_theta_rte[usr_idx, :] = (1 - lr) * self.mat_theta_rte[usr_idx, :] + lr * (
                     self.delta * scale * (np.sum(self.mat_theta[usr_idx, :] * self.mat_pi[usr_idx, None], 0) *
                                           self.mat_pi[usr_idx, None] -
                                           self.mat_theta[usr_idx, :] * (self.mat_pi[usr_idx] *
-                                                                        self.mat_pi[usr_idx])[:, None]) + \
-                    self.epsilon * self.N / len(itm_idx) * np.sum(self.mat_beta[itm_idx, :], 0)[None, :] + \
-                    self.matEpsilon[usr_idx, None]
+                                                                        self.mat_pi[usr_idx])[:, None]) +
+                    self.epsilon * self.N / len(itm_idx) * np.sum(self.mat_beta[itm_idx, :], 0)[None, :] +
+                    self.matEpsilon[usr_idx, None])
 
                 self.mat_theta[usr_idx, :] = self.mat_theta_shp[usr_idx, :] / self.mat_theta_rte[usr_idx, :]
 
@@ -522,35 +530,36 @@ class ManifoldPMF:
             """
             scale = (self.N - 1) / (len(itm_idx) - 1)
             if self.mu > 0:
-                self.mat_gamma_shp[itm_idx] = np.squeeze(np.asarray(self.r + scale * self.mat_s[itm_idx, :].sum(1)))
-                self.mat_gamma_rte[itm_idx] = \
+                self.mat_gamma_shp[itm_idx] = (1 - lr) * self.mat_gamma_shp[itm_idx] + lr * (
+                    np.squeeze(np.asarray(self.r + scale * self.mat_s[itm_idx, :].sum(1))))
+
+                self.mat_gamma_rte[itm_idx] = (1 - lr) * self.mat_gamma_rte[itm_idx] + lr *(
                     self.s + scale * np.dot(self.mat_beta[itm_idx, :],
-                                            np.sum(self.mat_beta[itm_idx, :] * self.mat_gamma[itm_idx, None], 0).T)
+                                            np.sum(self.mat_beta[itm_idx, :] * self.mat_gamma[itm_idx, None], 0).T))
+
                 self.mat_gamma[itm_idx] = self.mat_gamma_shp[itm_idx] / self.mat_gamma_rte[itm_idx]
-            else:
-                self.mat_gamma = zeros(self.N, 1)
 
             if self.epsilon > 0 or self.mu > 0:
                 scale2 = np.squeeze(np.asarray((self.mat_x[:, itm_idx] > 0).sum(0) /
                                                (self.mat_x[np.ix_(usr_idx, itm_idx)] > 0).sum(0)))
                 for kk in range(self.K):
-                    self.mat_beta_shp[itm_idx, kk] = \
+                    self.mat_beta_shp[itm_idx, kk] = (1 - lr) * self.mat_beta_shp[itm_idx, kk] + lr * (
                         self.epsilon * scale2 * np.squeeze(
                             np.asarray(self.mat_x[np.ix_(usr_idx, itm_idx)].multiply(
-                                self.tensor_phi[kk][np.ix_(usr_idx, itm_idx)]).sum(0))) + \
+                                self.tensor_phi[kk][np.ix_(usr_idx, itm_idx)]).sum(0))) +
                         self.mu * scale * np.squeeze(
                             np.asarray(self.mat_s[np.ix_(itm_idx, itm_idx)].multiply(
-                                self.tensor_sigma[kk][np.ix_(itm_idx, itm_idx)]).sum(1)))
+                                self.tensor_sigma[kk][np.ix_(itm_idx, itm_idx)]).sum(1))))
 
-                self.mat_beta_shp[itm_idx, :] += self.d
+                self.mat_beta_shp[itm_idx, :] += lr * self.d
 
-                self.mat_beta_rte[itm_idx, :] = \
+                self.mat_beta_rte[itm_idx, :] = (1 - lr) * self.mat_beta_rte[itm_idx, :] + lr * (
                     self.mu * scale * (np.sum(self.mat_beta[itm_idx, :] * self.mat_gamma[itm_idx, None], 0) *
                                        self.mat_gamma[itm_idx, None] -
                                        self.mat_beta[itm_idx, :] * (self.mat_gamma[itm_idx] *
-                                                                    self.mat_gamma[itm_idx])[:, None]) + \
-                    self.epsilon * self.M / len(usr_idx) * np.sum(self.mat_theta[usr_idx, :], 0)[None, :] + \
-                    self.mat_eta[itm_idx, None]
+                                                                    self.mat_gamma[itm_idx])[:, None]) +
+                    self.epsilon * self.M / len(usr_idx) * np.sum(self.mat_theta[usr_idx, :], 0)[None, :] +
+                    self.mat_eta[itm_idx, None])
 
                 self.mat_beta[itm_idx, :] = self.mat_beta_shp[itm_idx, :] / self.mat_beta_rte[itm_idx, :]
 
@@ -575,37 +584,54 @@ class ManifoldPMF:
             """
              Calculate the likelihood to determine when to terminate.
             """
-            if i > 0:
 
-                new_1 = 0
-                new_2 = 0
-                new_3 = 0
+            new_1 = 0
+            new_2 = 0
+            new_3 = 0
 
-                if self.epsilon > 0:
-                    new_1 = self.epsilon / self.mat_x[np.ix_(usr_idx, itm_idx)].nnz * \
-                            dist.log_poisson(self.mat_x[np.ix_(usr_idx, itm_idx)],
-                                             self.mat_theta[usr_idx, :],
-                                             self.mat_beta[itm_idx, :].T)
+            if self.epsilon > 0:
+                new_1 = self.epsilon / self.mat_x[np.ix_(usr_idx, itm_idx)].nnz * \
+                        dist.log_poisson(self.mat_x[np.ix_(usr_idx, itm_idx)],
+                                         self.mat_theta[usr_idx, :],
+                                         self.mat_beta[itm_idx, :].T)
 
-                if self.delta > 0:
-                    new_2 = self.delta / self.mat_w.nnz * \
-                            dist.log_poisson(self.mat_w[np.ix_(usr_idx, usr_idx)],
-                                             self.mat_theta[usr_idx, :] * self.mat_pi[usr_idx, None],
-                                             (self.mat_theta[usr_idx, :] * self.mat_pi[usr_idx, None]).T)
+            if self.delta > 0:
+                new_2 = self.delta / self.mat_w.nnz * \
+                        dist.log_poisson(self.mat_w[np.ix_(usr_idx, usr_idx)],
+                                         self.mat_theta[usr_idx, :] * self.mat_pi[usr_idx, None],
+                                         (self.mat_theta[usr_idx, :] * self.mat_pi[usr_idx, None]).T)
 
-                if self.mu > 0:
-                    new_3 = self.mu / self.mat_s.nnz * \
-                            dist.log_poisson(self.mat_s[np.ix_(itm_idx, itm_idx)],
-                                             self.mat_beta[itm_idx, :] * self.mat_gamma[itm_idx, None],
-                                             (self.mat_beta[itm_idx, :] * self.mat_gamma[itm_idx, None]).T)
+            if self.mu > 0:
+                new_3 = self.mu / self.mat_s.nnz * \
+                        dist.log_poisson(self.mat_s[np.ix_(itm_idx, itm_idx)],
+                                         self.mat_beta[itm_idx, :] * self.mat_gamma[itm_idx, None],
+                                         (self.mat_beta[itm_idx, :] * self.mat_gamma[itm_idx, None]).T)
 
-                new_l = new_1 + new_2 + new_3
+            new_l = new_1 + new_2 + new_3
 
-                if abs(new_l - l) < 0.001:
-                    is_converge = True
+            if abs(new_l - l) < 0.001:
+                is_converge = True
 
-                l = new_l
-                print("\nLikelihood: ", l, "  ( ", new_1, ", ", new_2, ", ", new_3, " )")
+            l = new_l
+            print("\nLikelihood: ", l, "  ( ", new_1, ", ", new_2, ", ", new_3, " )")
+
+
+            """
+             Validate the precision of the recommendation in validation set
+            """
+            predict_matrix = self.mat_theta[list_valid_usrs, :].dot(self.mat_beta.T)
+            predict_matrix -= self.mat_x[list_valid_usrs, :].multiply(predict_matrix > 0)
+            avg_precision = 0
+            avg_recall = 0
+            for idx_t in range(len(list_valid_usrs)):
+                uid = list_valid_usrs[idx_t]
+                precision, recall = Measure.precision_recall_at_k(np.squeeze(self.mat_valid[uid, :].toarray()),
+                                                                  np.squeeze(np.array(predict_matrix[idx_t, :])), 20)
+                avg_precision += precision
+                avg_recall += recall
+            avg_precision /= len(list_valid_usrs)
+            avg_recall /= len(list_valid_usrs)
+            print("precision: ", avg_precision, " ,  recall: ", avg_recall)
 
         pickle.dump(self.mat_theta, open("mat_theta.p", 'wb'))
         pickle.dump(self.mat_beta, open("mat_beta.p", 'wb'))

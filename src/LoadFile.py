@@ -12,9 +12,9 @@ def load_small_toy(file_path):
     :return: matX, i.e., user/item matrix
     """
 
-    list_users = []
-    list_items = []
-    list_freq = []
+    row_index = []
+    col_index = []
+    val_index = []
 
     with open(file_path, 'r', encoding='UTF-8') as data:
         for line in data:
@@ -22,12 +22,31 @@ def load_small_toy(file_path):
             user = int(l[0]) - 1
             item = int(l[1]) - 1
             freq = float(l[2])
-            list_users.append(user)
-            list_items.append(item)
-            list_freq.append(freq)
+            row_index.append(user)
+            col_index.append(item)
+            val_index.append(freq)
 
-    mat_x = csr_matrix((list_freq, (list_users, list_items)))
-    return mat_x
+    M = len(set(row_index))
+    N = len(set(col_index))
+    nnz = len(val_index)
+    mask = np.random.randint(100, size=nnz)
+    idx_test = mask < 21
+    idx_valid = mask == 21
+    idx_train = mask > 21
+
+    matX_train = csr_matrix((np.compress(idx_train, val_index, axis=0),
+                             (np.compress(idx_train, row_index, axis=0), np.compress(idx_train, col_index, axis=0))),
+                            shape=(M, N))
+
+    matX_test = csr_matrix((np.compress(idx_test, val_index, axis=0),
+                            (np.compress(idx_test, row_index, axis=0), np.compress(idx_test, col_index, axis=0))),
+                           shape=(M, N))
+
+    matX_valid = csr_matrix((np.compress(idx_valid, val_index, axis=0),
+                             (np.compress(idx_valid, row_index, axis=0), np.compress(idx_valid, col_index, axis=0))),
+                            shape=(M, N))
+
+    return matX_train, matX_test, matX_valid
 
 
 def load_iris(file_path):
@@ -251,13 +270,16 @@ def load_MovieLens(ui_path):
         idx_train = mask > 21
 
         matX_train = csr_matrix((np.compress(idx_train, val_index, axis=0),
-                                (np.compress(idx_train, row_index, axis=0), np.compress(idx_train, col_index, axis=0))))
+                                (np.compress(idx_train, row_index, axis=0), np.compress(idx_train, col_index, axis=0))),
+                                shape=(len(row_index), len(col_index)))
 
         matX_test = csr_matrix((np.compress(idx_test, val_index, axis=0),
-                                 (np.compress(idx_test, row_index, axis=0), np.compress(idx_test, col_index, axis=0))))
+                               (np.compress(idx_test, row_index, axis=0), np.compress(idx_test, col_index, axis=0))),
+                               shape=(len(row_index), len(col_index)))
 
         matX_valid = csr_matrix((np.compress(idx_valid, val_index, axis=0),
-                                (np.compress(idx_valid, row_index, axis=0), np.compress(idx_valid, col_index, axis=0))))
+                                (np.compress(idx_valid, row_index, axis=0), np.compress(idx_valid, col_index, axis=0))),
+                                shape=(len(row_index), len(col_index)))
 
         pickle.dump(matX_train, open("MovieLens_train.p", 'wb'))
         pickle.dump(matX_test, open("MovieLens_test.p", 'wb'))

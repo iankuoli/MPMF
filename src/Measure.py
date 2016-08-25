@@ -27,7 +27,7 @@ def precision_recall_at_k(vec_label, vec_predict, k):
     predict_set = set(np.argpartition(vec_predict, -k)[-k:])
 
     precision = len(set.intersection(label_set, predict_set)) / len(predict_set)
-    recall = len(set.intersection(label_set, predict_set)) / vec_label.nnz
+    recall = len(set.intersection(label_set, predict_set)) / len(vec_label)
 
     return precision, recall
 

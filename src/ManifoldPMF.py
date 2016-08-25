@@ -619,12 +619,14 @@ class ManifoldPMF:
             """
              Validate the precision of the recommendation in validation set
             """
-            predict_matrix = self.mat_theta[list_valid_usrs, :].dot(self.mat_beta.T)
-            predict_matrix -= self.mat_x[list_valid_usrs, :].multiply(predict_matrix > 0)
+            rand_idx = random.sample(range(len(list_valid_usrs)), 100)
+            rand_users = [list_valid_usrs[i] for i in rand_idx]
+            predict_matrix = self.mat_theta[rand_users, :].dot(self.mat_beta.T)
+            predict_matrix -= self.mat_x[rand_users, :].multiply(predict_matrix > 0)
             avg_precision = 0
             avg_recall = 0
-            for idx_t in range(len(list_valid_usrs)):
-                uid = list_valid_usrs[idx_t]
+            for idx_t in range(len(rand_users)):
+                uid = rand_users[idx_t]
                 precision, recall = Measure.precision_recall_at_k(np.squeeze(self.mat_valid[uid, :].toarray()),
                                                                   np.squeeze(np.array(predict_matrix[idx_t, :])), 20)
                 avg_precision += precision

@@ -29,7 +29,7 @@ Test Type = >
  11: Book-Crossing Dataset  (http://www2.informatik.uni-freiburg.de/~cziegler/BX/)
  12: Amazon product data  (http://jmcauley.ucsd.edu/data/amazon/)
  """
-TEST_TYPE = 1
+TEST_TYPE = 8
 
 """ Enviornment = > 1: OSX 2: Windows """
 ENV = 2
@@ -180,7 +180,7 @@ if TEST_TYPE == 1:
     # CoordinateAscent_MPF_1(K, 10 * ones(1, 6), 1, 10, 0, 0.1, 3, 1, 0.01)
     # CoordinateAscent_MPF_2(K, 10 * ones(1, 6), 1, 5, 0, 0.01, 3, 1, 0.01, 20)
     # CoordinateAscent_MRwPF_1(K, 10 * ones(1, 6), 1, 100, 100, 0.01, 3, 1, 0.01)
-    MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 10, ([1] * 10))), ini_scale=0.01)
+    MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 10, ([1] * 10))), ini_scale=0.01, ini=0)
     # MPMF.coordinate_ascent(delta=100, epsilon=1, mu=0.3, r_u=3, r_i=1, alpha=0.3, max_itr=10000)
     MPMF.stochastic_coordinate_ascent(batch_size=10, delta=100, epsilon=1, mu=0.3, r_u=3, r_i=1, max_itr=10000)
 
@@ -228,9 +228,8 @@ elif TEST_TYPE == 5:
     MPMF.coordinate_ascent(delta=1, epsilon=0, mu=0, r_u=20, r_i=1, alpha=0.1, max_itr=10000)
 
 elif TEST_TYPE == 8:
-    MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 10, ([1] * 10))), ini_scale=0.01)
+    MPMF = ManifoldPMF.ManifoldPMF(100, matX, list(map(lambda x: x * 10, ([1] * 10))), ini_scale=0.01, ini=1)
     MPMF.stochastic_coordinate_ascent(batch_size=10, delta=100, epsilon=1, mu=0.3, r_u=3, r_i=1, max_itr=10000)
-
 
 # The test for clustering
 [g, h] = max(MPMF.matTheta, [], 2)

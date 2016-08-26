@@ -25,9 +25,11 @@ def accuracy_for_clustering(vec_label, vec_pred, K):
 def precision_recall_at_k(vec_label, vec_predict, k):
     label_set = set(np.argpartition(vec_label, -k)[-k:])
     predict_set = set(np.argpartition(vec_predict, -k)[-k:])
+    label_set = label_set.intersection(set(vec_label.nonzero()[0]))
+    predict_set = predict_set.intersection(set(vec_predict.nonzero()[0]))
 
     precision = len(set.intersection(label_set, predict_set)) / len(predict_set)
-    recall = len(set.intersection(label_set, predict_set)) / len(vec_label)
+    recall = len(set.intersection(label_set, predict_set)) / len(label_set)
 
     return precision, recall
 

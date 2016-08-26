@@ -2,7 +2,7 @@ import numpy as np
 from scipy import *
 from scipy.sparse import *
 from scipy.special import *
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import pickle
 import random
 
@@ -373,9 +373,6 @@ class ManifoldPMF:
                 l = new_l
                 print("\nLikelihood: ", l, "  ( ", new_1, ", ", new_2, ", ", new_3, " )")
 
-            if i == 100:
-                plt.matshow(self.mat_theta)
-
         pickle.dump(self.mat_theta, open("mat_theta.p", 'wb'))
         pickle.dump(self.mat_beta, open("mat_beta.p", 'wb'))
         pickle.dump(self.matEpsilon, open("matEpsilon.p", 'wb'))
@@ -404,15 +401,18 @@ class ManifoldPMF:
             i += 1
 
             """ Set the learning rate """
-            lr = (i + 1) ** -kappa
+            lr = i ** -kappa
 
             # Sample data
-            a1 = time.time()
-            rand_index = random.sample(range(nnz), batch_size)
-            usr_idx = list(set(find(self.mat_x)[0][rand_index]))
-            itm_idx = list(set(find(self.mat_x)[1][rand_index]))
-            a2 = time.time()
-            print("sampling time: ", a2 - a1, " sec")
+            # a1 = time.time()
+            usr_idx = list()
+            itm_idx = list()
+            while len(usr_idx) < 2 or len(itm_idx) < 2:
+                rand_index = random.sample(range(nnz), batch_size)
+                usr_idx = list(set(find(self.mat_x)[0][rand_index]))
+                itm_idx = list(set(find(self.mat_x)[1][rand_index]))
+            # a2 = time.time()
+            # print("sampling time: ", a2 - a1, " sec")
 
             print("\n Index: ", i, "  --------------------------- ", len(usr_idx), " / ", len(itm_idx), " - ", lr, "\n")
 
@@ -589,6 +589,9 @@ class ManifoldPMF:
             new_2 = 0
             new_3 = 0
 
+            usr_idx = list(range(50))
+            itm_idx = list(range(40))
+
             if self.epsilon > 0:
                 new_1 = self.epsilon / self.mat_x[np.ix_(usr_idx, itm_idx)].nnz * \
                         dist.log_poisson(self.mat_x[np.ix_(usr_idx, itm_idx)],
@@ -619,7 +622,7 @@ class ManifoldPMF:
             """
              Validate the precision of the recommendation in validation set
             """
-            rand_idx = random.sample(range(len(list_valid_usrs)), 100)
+            rand_idx = random.sample(range(len(list_valid_usrs)), len(list_valid_usrs))
             rand_users = [list_valid_usrs[i] for i in rand_idx]
             predict_matrix = self.mat_theta[rand_users, :].dot(self.mat_beta.T)
             predict_matrix -= self.mat_x[rand_users, :].multiply(predict_matrix > 0)
@@ -628,7 +631,7 @@ class ManifoldPMF:
             for idx_t in range(len(rand_users)):
                 uid = rand_users[idx_t]
                 precision, recall = Measure.precision_recall_at_k(np.squeeze(self.mat_valid[uid, :].toarray()),
-                                                                  np.squeeze(np.array(predict_matrix[idx_t, :])), 20)
+                                                                  np.squeeze(np.array(predict_matrix[idx_t, :])), 3)
                 avg_precision += precision
                 avg_recall += recall
             avg_precision /= len(list_valid_usrs)
@@ -727,6 +730,7 @@ class ManifoldPMF:
                                                                        shape=(usr_size, itm_size))
 
     def recommend_for_users(self, vec_query_user_index):
+        print(vec_query_user_index)
         return np.dot(self.mat_theta[vec_query_user_index, :], self.mat_beta)
 
     def recommend_for_items(self, vec_query_item_index):

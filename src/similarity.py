@@ -44,12 +44,16 @@ def similarity(mat_x, mat_y, type, r=1):
         y_nz_denominator = csr_matrix((gammaln(find(mat_y)[2] + r), (find(mat_y)[0], find(mat_y)[1])), mat_y.shape)
 
         mat_ret = np.zeros((mat_x.shape[0], mat_x.shape[0]))
+        mat_norm = np.zeros((mat_x.shape[0], mat_x.shape[0]))
 
         for i in range(mat_x.shape[0]):
             nz_mean = 0.5 * (mat_y + np.ones((mat_y.shape[0], 1)) * mat_x[i, :])
             ret = csr_matrix((gammaln(find(nz_mean)[2] + r), (find(nz_mean)[0], find(nz_mean)[1])), nz_mean.shape)
             ret += -0.5 * np.ones((mat_y.shape[0], 1)) * x_nz_denominator[i, :] - 0.5 * y_nz_denominator
+
+            mat_norm[i, :] = np.sum(nz_mean > 0, 1).T
             mat_ret[i, :] = np.squeeze(np.asarray(np.sum(ret, 1)))
 
-        mat_ret = np.exp(mat_ret / mat_x.shape[1])
+        mat_ret = np.exp(mat_ret / mat_norm)
+        # mat_ret = np.exp(mat_ret / mat_x.shape[1])
         return csr_matrix(mat_ret)

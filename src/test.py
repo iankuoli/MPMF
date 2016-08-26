@@ -29,7 +29,7 @@ Test Type = >
  11: Book-Crossing Dataset  (http://www2.informatik.uni-freiburg.de/~cziegler/BX/)
  12: Amazon product data  (http://jmcauley.ucsd.edu/data/amazon/)
  """
-TEST_TYPE = 8
+TEST_TYPE = 1
 
 """ Enviornment = > 1: OSX 2: Windows """
 ENV = 1
@@ -89,7 +89,7 @@ if REREAD == 1:
         if ENV == 1:
             matX = LoadFile.load_UCI_MSD('/Users/iankuoli/Dataset/UCI_MillionSongDataset/YearPredictionMSD.txt')
         elif ENV == 2:
-            matX = LoadFile.load__UCI_MSD('/home/iankuoli/dataset/UCI_MillionSongDataset/YearPredictionMSD.txt')
+            matX = LoadFile.load_UCI_MSD('/home/iankuoli/dataset/UCI_MillionSongDataset/YearPredictionMSD.txt')
     elif TEST_TYPE == 7:
 
         # ----- The Echo Nest Taste Profile Subset -----
@@ -182,7 +182,7 @@ if TEST_TYPE == 1:
     # CoordinateAscent_MRwPF_1(K, 10 * ones(1, 6), 1, 100, 100, 0.01, 3, 1, 0.01)
     MPMF = ManifoldPMF.ManifoldPMF(8, matX, matX_valid, list(map(lambda x: x * 10, ([1] * 10))), ini_scale=0.01, ini=1)
     # MPMF.coordinate_ascent(delta=100, epsilon=1, mu=0.3, r_u=3, r_i=1, alpha=0.3, max_itr=10000)
-    MPMF.stochastic_coordinate_ascent(batch_size=5, delta=100, epsilon=1, mu=0.3, kappa=0.9, max_itr=10000)
+    MPMF.stochastic_coordinate_ascent(batch_size=3, delta=100, epsilon=1, mu=0.3, kappa=0.3, max_itr=10000)
 
     # Recommendation
     list_topK = [5, 10, 15, 20, 30, 40, 50]
@@ -229,7 +229,7 @@ elif TEST_TYPE == 5:
 
 elif TEST_TYPE == 8:
     MPMF = ManifoldPMF.ManifoldPMF(100, matX, matX_valid, list(map(lambda x: x * 10, ([1] * 10))), ini_scale=0.01, ini=1)
-    MPMF.stochastic_coordinate_ascent(batch_size=10, delta=100, epsilon=1, mu=0.3, kappa=0.9, max_itr=10000)
+    MPMF.stochastic_coordinate_ascent(batch_size=30, delta=100, epsilon=1, mu=0.3, kappa=0.9, max_itr=10000)
 
 # The test for clustering
 [g, h] = max(MPMF.matTheta, [], 2)

@@ -6,7 +6,7 @@ import ManifoldPMF
 import Measure
 
 """
- Test Manifold Poisson Matrix Factorization.
+ Training Manifold Poisson Matrix Factorization.
 """
 
 """ vvv---------- Start: Global settings ----------vvv """
@@ -29,10 +29,10 @@ Test Type = >
  11: Book-Crossing Dataset  (http://www2.informatik.uni-freiburg.de/~cziegler/BX/)
  12: Amazon product data  (http://jmcauley.ucsd.edu/data/amazon/)
  """
-TEST_TYPE = 1
+TEST_TYPE = 8
 
 """ Enviornment = > 1: OSX 2: Windows """
-ENV = 1
+ENV = 2
 
 """ ^^^---------- Finish: Global settings ----------^^^ """
 
@@ -40,36 +40,52 @@ ENV = 1
 k = 8
 
 """ vvv---------- Start: Load Data ----------vvv """
+meta_info = "'"
 if REREAD == 1:
     if TEST_TYPE == 1:
+
+        meta_info = "SmallToy"
+
         if ENV == 1:
             matX, matX_test, matX_valid = LoadFile.load_small_toy("/Users/iankuoli/Dataset/small_toy/toy_graph.csv")
         elif ENV == 2:
             matX, matX_test, matX_valid = LoadFile.load_small_toy("/home/iankuoli/dataset/small_toy/toy_graph.csv")
 
     elif TEST_TYPE == 2:
+
         # Read JAIN
+        meta_info = "JAIN"
+
         if ENV == 1:
             matX, vecLabel = LoadFile.load_small_toy("/Users/iankuoli/Dataset/jain.csv")
         elif ENV == 2:
             matX, vecLabel = LoadFile.load_small_toy("/home/iankuoli/dataset/jain.csv")
 
     elif TEST_TYPE == 3:
+
         # Read IRIS
+        meta_info = "Iris"
+
         if ENV == 1:
             matX, vecLabel = LoadFile.load_iris('/Users/iankuoli/Dataset/IRIS/iris.data')
         elif ENV == 2:
             matX, vecLabel = LoadFile.load_iris('/home/iankuoli/dataset/IRIS/iris.data')
 
     elif TEST_TYPE == 4:
+
         # Read YEAST
+        meta_info = "Yeast"
+
         if ENV == 1:
             matX, vecLabel = LoadFile.load_yeast('/Users/iankuoli/Dataset/YEAST/yeast.data')
         elif ENV == 2:
             matX, vecLabel = LoadFile.load_yeast('/home/iankuoli/dataset/YEAST/yeast.data')
 
     elif TEST_TYPE == 5:
+
         # Read Last.fm data(User - Item - Word)
+        meta_info = "LastFm"
+
         if ENV == 1:
             item_file_path = '/Users/iankuoli/Dataset/LastFm2/artists2.txt'
             word_file_path = '/Users/iankuoli/Dataset/LastFm2/tags.dat'
@@ -81,11 +97,14 @@ if REREAD == 1:
             UI_file_path = '/home/iankuoli/dataset/LastFm2/user_artists.dat'
             UIW_file_path = '/home/iankuoli/dataset/LastFm2/user_taggedartists.dat'
 
-        # [U, D, W] = LoadLastFmData(item_filepath, word_filepath, UI_filepath, UIW_filepath)
+            # [U, D, W] = LoadLastFmData(item_filepath, word_filepath, UI_filepath, UIW_filepath)
 
     elif TEST_TYPE == 6:
+
         # UCL Million Song Dataset
         # This dataset does not provide the user-item relationship
+        meta_info = "UCLSongDB"
+
         if ENV == 1:
             matX = LoadFile.load_UCI_MSD('/Users/iankuoli/Dataset/UCI_MillionSongDataset/YearPredictionMSD.txt')
         elif ENV == 2:
@@ -96,6 +115,7 @@ if REREAD == 1:
         # 1,019,318 unique users
         # 384,546 unique MSD songs
         # 48,373,586 user - song - play count triplets
+        meta_info = "EchoNest"
 
         if ENV == 1:
             matX, matX_test, matX_valid = LoadFile.load_EchoNest('/Users/iankuoli/Dataset/EchoNest/train_triplets.txt')
@@ -109,6 +129,7 @@ if REREAD == 1:
         # 27, 000movies
         # 20 million ratings
         # 465, 000 tag applications
+        meta_info = "MovieLens20M"
 
         if ENV == 1:
             matX, matX_test, matX_valid = LoadFile.load_MovieLens('/Users/iankuoli/Dataset/MovieLens_20M/ratings.csv')
@@ -121,11 +142,14 @@ if REREAD == 1:
         # 360,000 users
         # ??? artists
         # ??? consumings
+        meta_info = "LastFm360K"
 
         if ENV == 1:
-            matX, matX_test, matX_valid, dict_user2id, dict_id2item = LoadFile.load_MovieLens('/Users/iankuoli/Dataset/MovieLens_20M/ratings.csv')
+            matX, matX_test, matX_valid, dict_user2id, dict_id2item = LoadFile.load_MovieLens(
+                '/Users/iankuoli/Dataset/MovieLens_20M/ratings.csv')
         elif ENV == 2:
-            matX, matX_test, matX_valid, dict_user2id, dict_id2item = LoadFile.load_MovieLens('/home/iankuoli/dataset/MovieLens_20M/ratings.csv')
+            matX, matX_test, matX_valid, dict_user2id, dict_id2item = LoadFile.load_MovieLens(
+                '/home/iankuoli/dataset/MovieLens_20M/ratings.csv')
 
     elif TEST_TYPE == 10:
 
@@ -133,11 +157,14 @@ if REREAD == 1:
         # ??? users
         # ??? artists
         # ??? consumings
+        meta_info = "YahooR1"
 
         if ENV == 1:
-            matX, matX_test, matX_valid = LoadFile.load_YahooR1('/Users/iankuoli/Dataset/Yahoo_R1/ydata-ymusic-user-artist-ratings-v1_0.txt')
+            matX, matX_test, matX_valid = LoadFile.load_YahooR1(
+                '/Users/iankuoli/Dataset/Yahoo_R1/ydata-ymusic-user-artist-ratings-v1_0.txt')
         elif ENV == 2:
-            matX, matX_test, matX_valid = LoadFile.load_YahooR1('/home/iankuoli/dataset/Yahoo_R1/ydata-ymusic-user-artist-ratings-v1_0.txt')
+            matX, matX_test, matX_valid = LoadFile.load_YahooR1(
+                '/home/iankuoli/dataset/Yahoo_R1/ydata-ymusic-user-artist-ratings-v1_0.txt')
 
     elif TEST_TYPE == 11:
 
@@ -145,6 +172,7 @@ if REREAD == 1:
         # 278,858 users
         # 271,379 books
         # 1,149,780 ratings
+        meta_info = "BookCrossDB"
 
         if ENV == 1:
             matX, matX_test, matX_valid = LoadFile.load_BX('/Users/iankuoli/Dataset/BX-CSV-Dump/BX-Book-Ratings.csv')
@@ -163,6 +191,7 @@ if REREAD == 1:
                      3: "ratings_Pet_Supplies.csv",
                      4: "ratings_Baby.csv"
                      }
+        meta_info = "Amazon_" + 1
 
         if ENV == 1:
             matX, matX_test, matX_valid = LoadFile.load_Amazon('/Users/iankuoli/Dataset/amazon/', dict_type[1], '.csv')
@@ -180,9 +209,12 @@ if TEST_TYPE == 1:
     # CoordinateAscent_MPF_1(K, 10 * ones(1, 6), 1, 10, 0, 0.1, 3, 1, 0.01)
     # CoordinateAscent_MPF_2(K, 10 * ones(1, 6), 1, 5, 0, 0.01, 3, 1, 0.01, 20)
     # CoordinateAscent_MRwPF_1(K, 10 * ones(1, 6), 1, 100, 100, 0.01, 3, 1, 0.01)
-    MPMF = ManifoldPMF.ManifoldPMF(8, matX, matX_valid, list(map(lambda x: x * 10, ([1] * 10))), ini_scale=0.01, ini=1)
+    MPMF = ManifoldPMF.ManifoldPMF(8, matX.shape[0], matX.shape[1], list(map(lambda x: x * 10, ([1] * 10))),
+                                   ini_scale=0.01, ini=1)
     # MPMF.coordinate_ascent(delta=100, epsilon=1, mu=0.3, r_u=3, r_i=1, alpha=0.3, max_itr=10000)
-    MPMF.stochastic_coordinate_ascent(batch_size=3, delta=100, epsilon=1, mu=0.3, kappa=0.3, max_itr=10000)
+    MPMF.stochastic_coordinate_ascent(mat_x=matX, mat_valid=matX_valid, batch_size=5, delta=100, epsilon=1, mu=0.3,
+                                      kappa=0.9, max_itr=10000)
+    MPMF.dump_model(meta_info)
 
     # Recommendation
     list_topK = [5, 10, 15, 20, 30, 40, 50]
@@ -210,6 +242,7 @@ elif TEST_TYPE == 2:
     # CoordinateAscent_MPF_1(2, 1 * ones(1, 6), 0, 1, 0, 0.001, 5, 1, 0.1)
     MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 1, ([1] * 10))), ini_scale=0.1)
     MPMF.coordinate_ascent(delta=1, epsilon=0, mu=0, r_u=5, r_i=1, alpha=0.001, max_itr=10000)
+    MPMF.dump_model(meta_info)
 
 elif TEST_TYPE == 3:
     """ The best settings for IRIS = > 0.966667 """
@@ -222,14 +255,19 @@ elif TEST_TYPE == 4:
     # CoordinateAscent_MPF3(K, 1 * ones(1, 4), 0, 1, 0, 0.1, 20, 1)
     MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 1, ([1] * 10))), ini_scale=0.1)
     MPMF.coordinate_ascent(delta=1, epsilon=0, mu=0, r_u=20, r_i=1, alpha=0.1, max_itr=10000)
+    MPMF.dump_model(meta_info)
 
 elif TEST_TYPE == 5:
     MPMF = ManifoldPMF.ManifoldPMF(k, matX, list(map(lambda x: x * 1, ([1] * 10))), ini_scale=0.1)
     MPMF.coordinate_ascent(delta=1, epsilon=0, mu=0, r_u=20, r_i=1, alpha=0.1, max_itr=10000)
+    MPMF.dump_model(meta_info)
 
 elif TEST_TYPE == 8:
-    MPMF = ManifoldPMF.ManifoldPMF(100, matX, matX_valid, list(map(lambda x: x * 10, ([1] * 10))), ini_scale=0.01, ini=1)
-    MPMF.stochastic_coordinate_ascent(batch_size=30, delta=100, epsilon=1, mu=0.3, kappa=0.9, max_itr=10000)
+    MPMF = ManifoldPMF.ManifoldPMF(100, matX.shape[0], matX.shape[1], list(map(lambda x: x * 10, ([1] * 10))),
+                                   ini_scale=0.01, ini=1)
+    MPMF.stochastic_coordinate_ascent(mat_x=matX, mat_valid=matX_valid, batch_size=10, delta=100, epsilon=1, mu=0.3,
+                                      kappa=0.1, max_itr=30000)
+    MPMF.dump_model(meta_info)
 
 # The test for clustering
 [g, h] = max(MPMF.matTheta, [], 2)

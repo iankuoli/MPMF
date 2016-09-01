@@ -18,13 +18,11 @@ class ManifoldPMF:
     The idea is inspired from "Content-based recommendation with Poisson factorization", in NIPS, 2014.
     """
 
-    def __init__(self, val_k, data_x, valid_x, params, ini_scale, ini):
+    def __init__(self, val_k, m, n, params, ini_scale, ini):
 
         self.K = val_k
-        self.mat_x = data_x
-        self.mat_valid = valid_x
-        self.M = data_x.shape[0]
-        self.N = data_x.shape[1]
+        self.M = m
+        self.N = n
         self.delta = 0
         self.epsilon = 0
         self.mu = 0
@@ -32,9 +30,6 @@ class ManifoldPMF:
         self.r_i = 0
         self.ini_scale = ini_scale
         [self.a, self.b, self.c, self.d, self.e, self.f, self.p, self.q, self.r, self.s] = params
-
-        self.mat_w = csr_matrix((self.M, self.M))
-        self.mat_s = csr_matrix((self.N, self.N))
 
         """ vvv---------- Start: Initialize the matrices ----------vvv """
         if ini == 1:
@@ -62,41 +57,41 @@ class ManifoldPMF:
             self.mat_beta_rte = ini_scale * np.random.rand(self.N, self.K)
             self.mat_beta = self.mat_beta_shp / self.mat_beta_rte
 
-            pickle.dump(self.mat_epsilon_shp, open("ini/mat_epsilon_shp.p", 'wb'))
-            pickle.dump(self.mat_epsilon_rte, open("ini/mat_epsilon_rte.p", 'wb'))
-            pickle.dump(self.mat_eta_shp, open("ini/mat_eta_shp.p", 'wb'))
-            pickle.dump(self.mat_eta_rte, open("ini/mat_eta_rte.p", 'wb'))
-            pickle.dump(self.mat_pi_shp, open("ini/mat_pi_shp.p", 'wb'))
-            pickle.dump(self.mat_pi_rte, open("ini/mat_pi_rte.p", 'wb'))
-            pickle.dump(self.mat_gamma_shp, open("ini/mat_gamma_shp.p", 'wb'))
-            pickle.dump(self.mat_gamma_rte, open("ini/mat_gamma_rte.p", 'wb'))
-            pickle.dump(self.mat_theta_shp, open("ini/mat_theta_shp.p", 'wb'))
-            pickle.dump(self.mat_theta_rte, open("ini/mat_theta_rte.p", 'wb'))
-            pickle.dump(self.mat_beta_shp, open("ini/mat_beta_shp.p", 'wb'))
-            pickle.dump(self.mat_beta_rte, open("ini/mat_beta_rte.p", 'wb'))
+            pickle.dump(self.mat_epsilon_shp, open("../model/ini/mat_epsilon_shp.p", 'wb'))
+            pickle.dump(self.mat_epsilon_rte, open("../model/ini/mat_epsilon_rte.p", 'wb'))
+            pickle.dump(self.mat_eta_shp, open("../model/ini/mat_eta_shp.p", 'wb'))
+            pickle.dump(self.mat_eta_rte, open("../model/ini/mat_eta_rte.p", 'wb'))
+            pickle.dump(self.mat_pi_shp, open("../model/ini/mat_pi_shp.p", 'wb'))
+            pickle.dump(self.mat_pi_rte, open("../model/ini/mat_pi_rte.p", 'wb'))
+            pickle.dump(self.mat_gamma_shp, open("../model/ini/mat_gamma_shp.p", 'wb'))
+            pickle.dump(self.mat_gamma_rte, open("../model/ini/mat_gamma_rte.p", 'wb'))
+            pickle.dump(self.mat_theta_shp, open("../model/ini/mat_theta_shp.p", 'wb'))
+            pickle.dump(self.mat_theta_rte, open("../model/ini/mat_theta_rte.p", 'wb'))
+            pickle.dump(self.mat_beta_shp, open("../model/ini/mat_beta_shp.p", 'wb'))
+            pickle.dump(self.mat_beta_rte, open("../model/ini/mat_beta_rte.p", 'wb'))
         else:
-            self.mat_epsilon_shp = pickle.load(open("ini/mat_epsilon_shp.p", "rb"))
-            self.mat_epsilon_rte = pickle.load(open("ini/mat_epsilon_rte.p", "rb"))
+            self.mat_epsilon_shp = pickle.load(open("../model/ini/mat_epsilon_shp.p", "rb"))
+            self.mat_epsilon_rte = pickle.load(open("../model/ini/mat_epsilon_rte.p", "rb"))
             self.matEpsilon = self.mat_epsilon_shp / self.mat_epsilon_rte
 
-            self.mat_eta_shp = pickle.load(open("ini/mat_eta_shp.p", "rb"))
-            self.mat_eta_rte = pickle.load(open("ini/mat_eta_rte.p", "rb"))
+            self.mat_eta_shp = pickle.load(open("../model/ini/mat_eta_shp.p", "rb"))
+            self.mat_eta_rte = pickle.load(open("../model/ini/mat_eta_rte.p", "rb"))
             self.mat_eta = self.mat_eta_shp / self.mat_eta_rte
 
-            self.mat_pi_shp = pickle.load(open("ini/mat_pi_shp.p", "rb"))
-            self.mat_pi_rte = pickle.load(open("ini/mat_pi_rte.p", "rb"))
+            self.mat_pi_shp = pickle.load(open("../model/ini/mat_pi_shp.p", "rb"))
+            self.mat_pi_rte = pickle.load(open("../model/ini/mat_pi_rte.p", "rb"))
             self.mat_pi = self.mat_pi_shp / self.mat_pi_rte
 
-            self.mat_gamma_shp = pickle.load(open("ini/mat_gamma_shp.p", "rb"))
-            self.mat_gamma_rte = pickle.load(open("ini/mat_gamma_rte.p", "rb"))
+            self.mat_gamma_shp = pickle.load(open("../model/ini/mat_gamma_shp.p", "rb"))
+            self.mat_gamma_rte = pickle.load(open("../model/ini/mat_gamma_rte.p", "rb"))
             self.mat_gamma = self.mat_gamma_shp / self.mat_gamma_rte
 
-            self.mat_theta_shp = pickle.load(open("ini/mat_theta_shp.p", "rb"))
-            self.mat_theta_rte = pickle.load(open("ini/mat_theta_rte.p", "rb"))
+            self.mat_theta_shp = pickle.load(open("../model/ini/mat_theta_shp.p", "rb"))
+            self.mat_theta_rte = pickle.load(open("../model/ini/mat_theta_rte.p", "rb"))
             self.mat_theta = self.mat_theta_shp / self.mat_theta_rte
 
-            self.mat_beta_shp = pickle.load(open("ini/mat_beta_shp.p", "rb"))
-            self.mat_beta_rte = pickle.load(open("ini/mat_beta_rte.p", "rb"))
+            self.mat_beta_shp = pickle.load(open("../model/ini/mat_beta_shp.p", "rb"))
+            self.mat_beta_rte = pickle.load(open("../model/ini/mat_beta_rte.p", "rb"))
             self.mat_beta = self.mat_beta_shp / self.mat_beta_rte
 
         self.tensor_phi = []
@@ -109,7 +104,7 @@ class ManifoldPMF:
 
         """ ^^^---------- Finish: Initialize the matrices ----------^^^ """
 
-    def coordinate_ascent(self, delta, epsilon, mu, r_u, r_i, alpha, max_itr, ini=False):
+    def coordinate_ascent(self, mat_x, delta, epsilon, mu, r_u, r_i, alpha, max_itr, ini=False):
 
         if ini is True:
             self.initialize()
@@ -123,13 +118,13 @@ class ManifoldPMF:
         """ vvv---------- Start: Build the kernel matrix ----------vvv """
         """ Build mat_w """
         if self.delta > 0:
-            self.mat_w = sim.similarity(self.mat_x.todense(), self.mat_x.todense(), 'gamma')
-            self.mat_w -= eye(self.M)
+            mat_w = sim.similarity(mat_x.todense(), mat_x.todense(), 'gamma')
+            mat_w -= eye(self.M)
 
         """ Build mat_s """
         if self.mu > 0:
-            self.mat_s = sim.similarity(self.mat_x.todense().T, self.mat_x.todense().T, 'gamma')
-            self.mat_s -= eye(self.N)
+            mat_s = sim.similarity(mat_x.todense().T, mat_x.todense().T, 'gamma')
+            mat_s -= eye(self.N)
         """ ^^^---------- Finish: Build the kernel matrix ----------^^^ """
 
         is_converge = False
@@ -137,10 +132,10 @@ class ManifoldPMF:
         l = 0
 
         if self.delta > 0 and self.M < 1000:
-            mat_ww = np.linalg.pinv(np.eye(self.M) - (1 - alpha) * self.mat_w)
+            mat_ww = np.linalg.pinv(np.eye(self.M) - (1 - alpha) * mat_w)
 
         if self.mu > 0 and self.N < 1000:
-            mat_ss = np.linalg.pinv(np.eye(self.N) - (1 - alpha) * self.mat_s)
+            mat_ss = np.linalg.pinv(np.eye(self.N) - (1 - alpha) * mat_s)
 
         while is_converge is False and i < max_itr:
             i += 1
@@ -159,9 +154,9 @@ class ManifoldPMF:
 
                         for t in range(100):
                             mat_theta_shp_diff = \
-                                (1 - alpha) * np.dot(self.mat_x, mat_theta_shp_diff) + alpha * self.mat_theta_shp
+                                (1 - alpha) * np.dot(mat_x, mat_theta_shp_diff) + alpha * self.mat_theta_shp
 
-                            mat_theta_diff = (1 - alpha) * np.dot(self.mat_x, mat_theta_diff) + alpha * self.mat_theta
+                            mat_theta_diff = (1 - alpha) * np.dot(mat_x, mat_theta_diff) + alpha * self.mat_theta
 
                         mat_theta_shp_diff = mat_theta_shp_diff / alpha
                         mat_theta_diff = mat_theta_diff / alpha
@@ -220,12 +215,12 @@ class ManifoldPMF:
             if self.epsilon > 0:
                 print('Update tensor_phi ...  k = ')
                 mat_phi_sum = csr_matrix((self.M, self.N))
-                # mat_x_One = self.mat_x > 0
+                # mat_x_One = mat_x > 0
                 for kk in range(self.K):
                     print(kk, ", ", end="")
 
-                    self.tensor_phi[kk] = diags(mat_theta_shp_psi[:, kk] - mat_theta_rte_log[:, kk]) * (self.mat_x > 0)
-                    self.tensor_phi[kk] += np.dot((self.mat_x > 0), diags(mat_beta_shp_psi[:, kk] -
+                    self.tensor_phi[kk] = diags(mat_theta_shp_psi[:, kk] - mat_theta_rte_log[:, kk]) * (mat_x > 0)
+                    self.tensor_phi[kk] += np.dot((mat_x > 0), diags(mat_beta_shp_psi[:, kk] -
                                                                           mat_beta_rte_log[:, kk]))
 
                     [ii, jj, ss] = find(self.tensor_phi[kk])
@@ -243,7 +238,7 @@ class ManifoldPMF:
             if self.delta > 0:
                 print("\nUpdate tensor_rho ...  k = ")
                 self.manifold_tensor_update(tensor_manifold=self.tensor_rho,
-                                            mat_manifold=self.mat_w,
+                                            mat_manifold=mat_w,
                                             manifold_size=self.M,
                                             mat_data_shp_psi=mat_theta_shp_psi,
                                             mat_data_rte_log=mat_theta_rte_log,
@@ -256,7 +251,7 @@ class ManifoldPMF:
             if self.mu > 0:
                 print("\nUpdate tensor_sigma ...  k = ")
                 self.manifold_tensor_update(tensor_manifold=self.tensor_sigma,
-                                            mat_manifold=self.mat_s,
+                                            mat_manifold=mat_s,
                                             manifold_size=self.N,
                                             mat_data_shp_psi=mat_beta_shp_psi,
                                             mat_data_rte_log=mat_beta_rte_log,
@@ -271,7 +266,7 @@ class ManifoldPMF:
              Update mat_theta_shp, mat_theta_rte, mat_thetaD
             """
             if self.delta > 0:
-                self.mat_pi_shp = np.squeeze(np.asarray(self.p + self.mat_w.sum(1)))
+                self.mat_pi_shp = np.squeeze(np.asarray(self.p + mat_w.sum(1)))
                 self.mat_pi_rte = self.q + np.dot(self.mat_theta, sum(self.mat_theta * self.mat_pi[:, None], 0).T)
                 self.mat_pi = self.mat_pi_shp / self.mat_pi_rte
             else:
@@ -280,10 +275,10 @@ class ManifoldPMF:
             if self.epsilon > 0 or self.delta > 0:
                 for kk in range(self.K):
                     self.mat_theta_shp[:, kk] = self.epsilon * np.squeeze(
-                        np.asarray(self.mat_x.multiply(self.tensor_phi[kk]).sum(1)))
+                        np.asarray(mat_x.multiply(self.tensor_phi[kk]).sum(1)))
 
                     self.mat_theta_shp[:, kk] += self.delta * np.squeeze(
-                        np.asarray(self.mat_w.multiply(self.tensor_rho[kk]).sum(1)))
+                        np.asarray(mat_w.multiply(self.tensor_rho[kk]).sum(1)))
 
                 self.mat_theta_shp += self.a
 
@@ -299,7 +294,7 @@ class ManifoldPMF:
              Update mat_beta_shp, mat_beta_rte, mat_betaD
             """
             if self.mu > 0:
-                self.mat_gamma_shp = np.squeeze(np.asarray(self.r + self.mat_s.sum(1)))
+                self.mat_gamma_shp = np.squeeze(np.asarray(self.r + mat_s.sum(1)))
                 self.mat_gamma_rte = self.s + np.dot(self.mat_beta, sum(self.mat_beta * self.mat_gamma[:, None], 0).T)
                 self.mat_gamma = self.mat_gamma_shp / self.mat_gamma_rte
             else:
@@ -308,10 +303,10 @@ class ManifoldPMF:
             if self.epsilon > 0 or self.mu > 0:
                 for kk in range(self.K):
                     self.mat_beta_shp[:, kk] = self.epsilon * np.squeeze(
-                        np.asarray(self.mat_x.multiply(self.tensor_phi[kk]).sum(0)))
+                        np.asarray(mat_x.multiply(self.tensor_phi[kk]).sum(0)))
 
                     self.mat_beta_shp[:, kk] += self.mu * np.squeeze(
-                        np.asarray(self.mat_s.multiply(self.tensor_sigma[kk]).sum(1)))
+                        np.asarray(mat_s.multiply(self.tensor_sigma[kk]).sum(1)))
 
                 self.mat_beta_shp += self.d
 
@@ -352,16 +347,16 @@ class ManifoldPMF:
                 new_3 = 0
 
                 if self.epsilon > 0:
-                    new_1 = self.epsilon / self.mat_x.nnz * dist.log_poisson(self.mat_x,
+                    new_1 = self.epsilon / mat_x.nnz * dist.log_poisson(mat_x,
                                                                              self.mat_theta, self.mat_beta.T)
 
                 if self.delta > 0:
-                    new_2 = self.delta / self.mat_w.nnz * dist.log_poisson(self.mat_w,
+                    new_2 = self.delta / mat_w.nnz * dist.log_poisson(mat_w,
                                                                            self.mat_theta * self.mat_pi[:, None],
                                                                            (self.mat_theta * self.mat_pi[:, None]).T)
 
                 if self.mu > 0:
-                    new_3 = self.mu / self.mat_s.nnz * dist.log_poisson(self.mat_s,
+                    new_3 = self.mu / mat_s.nnz * dist.log_poisson(mat_s,
                                                                         self.mat_beta * self.mat_gamma[:, None],
                                                                         (self.mat_beta * self.mat_gamma[:, None]).T)
 
@@ -380,7 +375,8 @@ class ManifoldPMF:
         pickle.dump(self.mat_pi, open("mat_pi.p", 'wb'))
         pickle.dump(self.mat_gamma, open("mat_gamma.p", 'wb'))
 
-    def stochastic_coordinate_ascent(self, batch_size, delta, epsilon, mu, kappa, max_itr, ini=False):
+    def stochastic_coordinate_ascent(self, mat_x, mat_valid, batch_size, delta, epsilon, mu,
+                                     kappa, max_itr, ini=False):
 
         if ini is True:
             self.initialize()
@@ -389,13 +385,13 @@ class ManifoldPMF:
         self.epsilon = epsilon
         self.mu = mu
 
-        nnz = self.mat_x.nnz
+        nnz = mat_x.nnz
 
         is_converge = False
         i = 0
         l = 0
 
-        list_valid_usrs = list(set(find(self.mat_valid)[0]))
+        list_valid_usrs = list(set(find(mat_valid)[0]))[0:100]
 
         while is_converge is False and i < max_itr:
             i += 1
@@ -409,8 +405,8 @@ class ManifoldPMF:
             itm_idx = list()
             while len(usr_idx) < 2 or len(itm_idx) < 2:
                 rand_index = random.sample(range(nnz), batch_size)
-                usr_idx = list(set(find(self.mat_x)[0][rand_index]))
-                itm_idx = list(set(find(self.mat_x)[1][rand_index]))
+                usr_idx = list(set(find(mat_x)[0][rand_index]))
+                itm_idx = list(set(find(mat_x)[1][rand_index]))
             # a2 = time.time()
             # print("sampling time: ", a2 - a1, " sec")
 
@@ -419,19 +415,19 @@ class ManifoldPMF:
             """ vvv---------- Start: Build the kernel matrix ----------vvv """
             """ Build mat_w """
             if self.delta > 0:
-                mat_w = sim.similarity(self.mat_x[usr_idx, :],
-                                       self.mat_x[usr_idx, :], 'gamma2')
+                mat_w = sim.similarity(mat_x[usr_idx, :],
+                                       mat_x[usr_idx, :], 'gamma2')
 
                 mat_w -= eye(len(usr_idx))
-                self.mat_w[np.ix_(usr_idx, usr_idx)] = mat_w
+                # mat_w[np.ix_(usr_idx, usr_idx)] = mat_w
 
             """ Build mat_s """
             if self.mu > 0:
-                mat_s = sim.similarity(self.mat_x[:, itm_idx].T,
-                                       self.mat_x[:, itm_idx].T, 'gamma2')
+                mat_s = sim.similarity(mat_x[:, itm_idx].T,
+                                       mat_x[:, itm_idx].T, 'gamma2')
 
                 mat_s -= eye(len(itm_idx))
-                self.mat_s[np.ix_(itm_idx, itm_idx)] = mat_s
+                # mat_s[np.ix_(itm_idx, itm_idx)] = mat_s
             """ ^^^---------- Finish: Build the kernel matrix ----------^^^ """
 
             mat_theta_shp_psi = psi(self.mat_theta_shp)
@@ -449,7 +445,8 @@ class ManifoldPMF:
             """
             if self.epsilon > 0:
                 print('Update tensor_phi ...  k = ')
-                self.data_tensor_partial_update(usr_idx=usr_idx,
+                self.data_tensor_partial_update(mat_x=mat_x,
+                                                usr_idx=usr_idx,
                                                 itm_idx=itm_idx,
                                                 usr_size=len(usr_idx),
                                                 itm_size=len(itm_idx),
@@ -464,7 +461,7 @@ class ManifoldPMF:
             if self.delta > 0:
                 print("\nUpdate tensor_rho ...  k = ")
                 self.manifold_tensor_partial_update(big_tensor_manifold=self.tensor_rho,
-                                                    mat_manifold=self.mat_w,
+                                                    mat_manifold=mat_w,
                                                     data_idx=usr_idx,
                                                     mat_data_shp_psi=mat_theta_shp_psi,
                                                     mat_data_rte_log=mat_theta_rte_log,
@@ -477,7 +474,7 @@ class ManifoldPMF:
             if self.mu > 0:
                 print("\nUpdate tensor_sigma ...  k = ")
                 self.manifold_tensor_partial_update(big_tensor_manifold=self.tensor_sigma,
-                                                    mat_manifold=self.mat_s,
+                                                    mat_manifold=mat_s,
                                                     data_idx=itm_idx,
                                                     mat_data_shp_psi=mat_beta_shp_psi,
                                                     mat_data_rte_log=mat_beta_rte_log,
@@ -494,7 +491,7 @@ class ManifoldPMF:
             scale = (self.M - 1) / (len(usr_idx) - 1)
             if self.delta > 0:
                 self.mat_pi_shp[usr_idx] = (1 - lr) * self.mat_pi_shp[usr_idx] + lr * (
-                    np.squeeze(np.asarray(self.p + scale * self.mat_w[usr_idx, :].sum(1))))
+                    np.squeeze(np.asarray(self.p + scale * mat_w.sum(1))))
 
                 self.mat_pi_rte[usr_idx] = (1 - lr) * self.mat_pi_rte[usr_idx] + lr * (
                     self.q + scale * np.dot(self.mat_theta[usr_idx, :],
@@ -503,15 +500,15 @@ class ManifoldPMF:
                 self.mat_pi[usr_idx] = self.mat_pi_shp[usr_idx] / self.mat_pi_rte[usr_idx]
 
             if self.epsilon > 0 or self.delta > 0:
-                scale1 = np.squeeze(np.asarray((self.mat_x[usr_idx, :] > 0).sum(1) /
-                                               (self.mat_x[np.ix_(usr_idx, itm_idx)] > 0).sum(1)))
+                scale1 = np.squeeze(np.asarray((mat_x[usr_idx, :] > 0).sum(1) /
+                                               (mat_x[np.ix_(usr_idx, itm_idx)] > 0).sum(1)))
                 for kk in range(self.K):
                     self.mat_theta_shp[usr_idx, kk] = (1 - lr) * self.mat_theta_shp[usr_idx, kk] + lr * (
                         self.epsilon * scale1 * np.squeeze(
-                            np.asarray(self.mat_x[np.ix_(usr_idx, itm_idx)].multiply(
+                            np.asarray(mat_x[np.ix_(usr_idx, itm_idx)].multiply(
                                 self.tensor_phi[kk][np.ix_(usr_idx, itm_idx)]).sum(1))) +
                         self.delta * scale * np.squeeze(
-                            np.asarray(self.mat_w[np.ix_(usr_idx, usr_idx)].multiply(
+                            np.asarray(mat_w.multiply(
                                 self.tensor_rho[kk][np.ix_(usr_idx, usr_idx)]).sum(1))))
                 self.mat_theta_shp[usr_idx, :] += lr * self.a
 
@@ -531,7 +528,7 @@ class ManifoldPMF:
             scale = (self.N - 1) / (len(itm_idx) - 1)
             if self.mu > 0:
                 self.mat_gamma_shp[itm_idx] = (1 - lr) * self.mat_gamma_shp[itm_idx] + lr * (
-                    np.squeeze(np.asarray(self.r + scale * self.mat_s[itm_idx, :].sum(1))))
+                    np.squeeze(np.asarray(self.r + scale * mat_s.sum(1))))
 
                 self.mat_gamma_rte[itm_idx] = (1 - lr) * self.mat_gamma_rte[itm_idx] + lr *(
                     self.s + scale * np.dot(self.mat_beta[itm_idx, :],
@@ -540,15 +537,15 @@ class ManifoldPMF:
                 self.mat_gamma[itm_idx] = self.mat_gamma_shp[itm_idx] / self.mat_gamma_rte[itm_idx]
 
             if self.epsilon > 0 or self.mu > 0:
-                scale2 = np.squeeze(np.asarray((self.mat_x[:, itm_idx] > 0).sum(0) /
-                                               (self.mat_x[np.ix_(usr_idx, itm_idx)] > 0).sum(0)))
+                scale2 = np.squeeze(np.asarray((mat_x[:, itm_idx] > 0).sum(0) /
+                                               (mat_x[np.ix_(usr_idx, itm_idx)] > 0).sum(0)))
                 for kk in range(self.K):
                     self.mat_beta_shp[itm_idx, kk] = (1 - lr) * self.mat_beta_shp[itm_idx, kk] + lr * (
                         self.epsilon * scale2 * np.squeeze(
-                            np.asarray(self.mat_x[np.ix_(usr_idx, itm_idx)].multiply(
+                            np.asarray(mat_x[np.ix_(usr_idx, itm_idx)].multiply(
                                 self.tensor_phi[kk][np.ix_(usr_idx, itm_idx)]).sum(0))) +
                         self.mu * scale * np.squeeze(
-                            np.asarray(self.mat_s[np.ix_(itm_idx, itm_idx)].multiply(
+                            np.asarray(mat_s.multiply(
                                 self.tensor_sigma[kk][np.ix_(itm_idx, itm_idx)]).sum(1))))
 
                 self.mat_beta_shp[itm_idx, :] += lr * self.d
@@ -589,24 +586,25 @@ class ManifoldPMF:
             new_2 = 0
             new_3 = 0
 
-            usr_idx = list(range(50))
-            itm_idx = list(range(40))
+            #usr_idx = list(range(50))
+            #itm_idx = list(range(40))
 
             if self.epsilon > 0:
-                new_1 = self.epsilon / self.mat_x[np.ix_(usr_idx, itm_idx)].nnz * \
-                        dist.log_poisson(self.mat_x[np.ix_(usr_idx, itm_idx)],
+                new_1 = self.epsilon / mat_x[np.ix_(usr_idx, itm_idx)].nnz * \
+                        dist.log_poisson(mat_x[np.ix_(usr_idx, itm_idx)],
                                          self.mat_theta[usr_idx, :],
                                          self.mat_beta[itm_idx, :].T)
 
             if self.delta > 0:
-                new_2 = self.delta / self.mat_w.nnz * \
-                        dist.log_poisson(self.mat_w[np.ix_(usr_idx, usr_idx)],
+                a = self.mat_theta[usr_idx, :] * self.mat_pi[usr_idx, None]
+                new_2 = self.delta / mat_w.nnz * \
+                        dist.log_poisson(mat_w,
                                          self.mat_theta[usr_idx, :] * self.mat_pi[usr_idx, None],
                                          (self.mat_theta[usr_idx, :] * self.mat_pi[usr_idx, None]).T)
 
             if self.mu > 0:
-                new_3 = self.mu / self.mat_s.nnz * \
-                        dist.log_poisson(self.mat_s[np.ix_(itm_idx, itm_idx)],
+                new_3 = self.mu / mat_s.nnz * \
+                        dist.log_poisson(mat_s,
                                          self.mat_beta[itm_idx, :] * self.mat_gamma[itm_idx, None],
                                          (self.mat_beta[itm_idx, :] * self.mat_gamma[itm_idx, None]).T)
 
@@ -625,12 +623,12 @@ class ManifoldPMF:
             rand_idx = random.sample(range(len(list_valid_usrs)), len(list_valid_usrs))
             rand_users = [list_valid_usrs[i] for i in rand_idx]
             predict_matrix = self.mat_theta[rand_users, :].dot(self.mat_beta.T)
-            predict_matrix -= self.mat_x[rand_users, :].multiply(predict_matrix > 0)
+            predict_matrix -= mat_x[rand_users, :].multiply(predict_matrix > 0)
             avg_precision = 0
             avg_recall = 0
             for idx_t in range(len(rand_users)):
                 uid = rand_users[idx_t]
-                precision, recall = Measure.precision_recall_at_k(np.squeeze(self.mat_valid[uid, :].toarray()),
+                precision, recall = Measure.precision_recall_at_k(np.squeeze(mat_valid[uid, :].toarray()),
                                                                   np.squeeze(np.array(predict_matrix[idx_t, :])), 3)
                 avg_precision += precision
                 avg_recall += recall
@@ -638,12 +636,19 @@ class ManifoldPMF:
             avg_recall /= len(list_valid_usrs)
             print("precision: ", avg_precision, " ,  recall: ", avg_recall)
 
-        pickle.dump(self.mat_theta, open("mat_theta.p", 'wb'))
-        pickle.dump(self.mat_beta, open("mat_beta.p", 'wb'))
-        pickle.dump(self.matEpsilon, open("matEpsilon.p", 'wb'))
-        pickle.dump(self.mat_eta, open("mat_eta.p", 'wb'))
-        pickle.dump(self.mat_pi, open("mat_pi.p", 'wb'))
-        pickle.dump(self.mat_gamma, open("mat_gamma.p", 'wb'))
+    def dump_model(self, meta_info):
+        pickle.dump(self, open("../model/MPMF_", meta_info, ".p", 'wb'))
+
+    # def static load_model(meta_info):
+    #    return pickle.load(open("../model/MPMF_", meta_info, ".p", 'rb'))
+        # self.mat_theta = pickle.load(open(meta_info, "/mat_theta.p", 'rb'))
+        # self.mat_beta = pickle.load(open(meta_info, "mat_beta.p", 'rb'))
+        # self.matEpsilon = pickle.load(open(meta_info, "matEpsilon.p", 'rb'))
+        # self.mat_eta = pickle.load(open(meta_info, "mat_eta.p", 'rb'))
+        # self.mat_pi = pickle.load(open(meta_info, "mat_pi.p", 'rb'))
+        # self.mat_gamma = pickle.load(open(meta_info, "mat_gamma.p", 'rb'))
+        # [self.a, self.b, self.c, self.d, self.e, self.f, self.p, self.q, self.r, self.s,
+        # self.delta, self.epsilon, self.mu] = pickle.load(open(meta_info, "mat_params.p", 'rb'))
 
     def manifold_tensor_update(self, tensor_manifold, mat_manifold, manifold_size,
                                mat_data_shp_psi, mat_data_rte_log, mat_norm_shp_psi, mat_norm_rte_log):
@@ -684,8 +689,8 @@ class ManifoldPMF:
             tensor_manifold[kk] = \
                 diags(mat_data_shp_psi[data_idx, kk] - mat_data_rte_log[data_idx, kk] +
                       mat_norm_shp_psi[data_idx] - mat_norm_rte_log[data_idx]) * \
-                (mat_manifold[np.ix_(data_idx, data_idx)] > 0) + \
-                (mat_manifold[np.ix_(data_idx, data_idx)] > 0) * \
+                (mat_manifold > 0) + \
+                (mat_manifold > 0) * \
                 diags(mat_data_shp_psi[data_idx, kk] - mat_data_rte_log[data_idx, kk] +
                       mat_norm_shp_psi[data_idx] - mat_norm_rte_log[data_idx])
 
@@ -702,7 +707,7 @@ class ManifoldPMF:
             big_tensor_manifold[kk][np.ix_(data_idx, data_idx)] = csr_matrix((v_m / v_m_sum, (x_m, y_m)),
                                                                              shape=(manifold_size, manifold_size))
 
-    def data_tensor_partial_update(self, usr_idx, itm_idx, usr_size, itm_size,
+    def data_tensor_partial_update(self, mat_x, usr_idx, itm_idx, usr_size, itm_size,
                                    mat_theta_shp_psi, mat_theta_rte_log, mat_beta_shp_psi, mat_beta_rte_log):
 
         mat_phi_sum = csr_matrix((usr_size, itm_size))
@@ -715,8 +720,8 @@ class ManifoldPMF:
             print(kk, ", ", end="")
 
             tensor_phi[kk] = diags(mat_theta_shp_psi[usr_idx, kk] - mat_theta_rte_log[usr_idx, kk]) * \
-                             (self.mat_x[np.ix_(usr_idx, itm_idx)] > 0) + \
-                             (self.mat_x[np.ix_(usr_idx, itm_idx)] > 0) * \
+                             (mat_x[np.ix_(usr_idx, itm_idx)] > 0) + \
+                             (mat_x[np.ix_(usr_idx, itm_idx)] > 0) * \
                              diags(mat_beta_shp_psi[itm_idx, kk] - mat_beta_rte_log[itm_idx, kk])
 
             [ii, jj, ss] = find(tensor_phi[kk])

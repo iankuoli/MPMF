@@ -29,10 +29,10 @@ Test Type = >
  11: Book-Crossing Dataset  (http://www2.informatik.uni-freiburg.de/~cziegler/BX/)
  12: Amazon product data  (http://jmcauley.ucsd.edu/data/amazon/)
  """
-TEST_TYPE = 8
+TEST_TYPE = 1
 
 """ Enviornment = > 1: OSX 2: Windows """
-ENV = 2
+ENV = 1
 
 """ ^^^---------- Finish: Global settings ----------^^^ """
 
@@ -213,7 +213,7 @@ if TEST_TYPE == 1:
                                    ini_scale=0.01, ini=1)
     # MPMF.coordinate_ascent(delta=100, epsilon=1, mu=0.3, r_u=3, r_i=1, alpha=0.3, max_itr=10000)
     MPMF.stochastic_coordinate_ascent(mat_x=matX, mat_valid=matX_valid, batch_size=5, delta=100, epsilon=1, mu=0.3,
-                                      kappa=0.9, max_itr=10000)
+                                      kappa=0.3, max_itr=10000)
     MPMF.dump_model(meta_info)
 
     # Recommendation

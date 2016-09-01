@@ -389,7 +389,7 @@ class ManifoldPMF:
 
         is_converge = False
         i = 0
-        l = 0
+        #l = 0
 
         list_valid_usrs = list(set(find(mat_valid)[0]))[0:100]
 
@@ -488,6 +488,7 @@ class ManifoldPMF:
             """
              Update mat_theta_shp, mat_theta_rte, mat_thetaD
             """
+            mat_theta_old = self.mat_theta[usr_idx, :]
             scale = (self.M - 1) / (len(usr_idx) - 1)
             if self.delta > 0:
                 self.mat_pi_shp[usr_idx] = (1 - lr) * self.mat_pi_shp[usr_idx] + lr * (
@@ -525,6 +526,7 @@ class ManifoldPMF:
             """
              Update mat_beta_shp, mat_beta_rte, mat_betaD
             """
+            mat_beta_old = self.mat_beta[itm_idx, :]
             scale = (self.N - 1) / (len(itm_idx) - 1)
             if self.mu > 0:
                 self.mat_gamma_shp[itm_idx] = (1 - lr) * self.mat_gamma_shp[itm_idx] + lr * (
@@ -586,8 +588,8 @@ class ManifoldPMF:
             new_2 = 0
             new_3 = 0
 
-            #usr_idx = list(range(50))
-            #itm_idx = list(range(40))
+            # usr_idx = list(range(50))
+            # itm_idx = list(range(40))
 
             if self.epsilon > 0:
                 new_1 = self.epsilon / mat_x[np.ix_(usr_idx, itm_idx)].nnz * \
@@ -608,18 +610,24 @@ class ManifoldPMF:
                                          self.mat_beta[itm_idx, :] * self.mat_gamma[itm_idx, None],
                                          (self.mat_beta[itm_idx, :] * self.mat_gamma[itm_idx, None]).T)
 
-            new_l = new_1 + new_2 + new_3
+            converge = dist.log_poisson(mat_theta_old.dot(mat_beta_old.T),mat_theta_old,mat_beta_old.T)
+                                        #self.mat_theta[usr_idx, :],
+                                        #self.mat_beta[itm_idx, :].T)
 
-            if abs(new_l - l) < 0.001:
+            # if abs(new_l - l) < 0.001:
+            if converge > - 1:
                 is_converge = True
 
-            l = new_l
-            print("\nLikelihood: ", l, "  ( ", new_1, ", ", new_2, ", ", new_3, " )")
+            # l = new_l
+            print("\nLikelihood: ", converge, "  ( ", new_1, ", ", new_2, ", ", new_3, " )")
 
 
             """
              Validate the precision of the recommendation in validation set
             """
+
+            #list_valid_usrs = list(range(50))
+
             rand_idx = random.sample(range(len(list_valid_usrs)), len(list_valid_usrs))
             rand_users = [list_valid_usrs[i] for i in rand_idx]
             predict_matrix = self.mat_theta[rand_users, :].dot(self.mat_beta.T)
